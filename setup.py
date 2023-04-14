@@ -9,7 +9,6 @@ setup(
     author="Jinhyeok Kim",
     author_email="jinhyuk@unist.ac.kr",
     install_requires=[
-        "json",
         "requests",
         "numpy",
     ],
