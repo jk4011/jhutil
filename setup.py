@@ -13,7 +13,7 @@ setup(
         "requests",
         "numpy",
     ],
-    packages=["torchlevy"],
+    packages=["jhutil"],
     python_requires=">=3.7, <4",
     project_urls={
         "Source": "https://github.com/jk4011/jhutil",
