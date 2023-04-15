@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
     name="jhutil",
@@ -11,6 +11,8 @@ setup(
     install_requires=[
         "requests",
         "numpy",
+        "openai",
+        
     ],
     packages=["jhutil"],
     python_requires=">=3.7, <4",
