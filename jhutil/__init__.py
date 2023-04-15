@@ -1,2 +1,3 @@
-from .slack import send_slack
-from .color_print import jhprint
+from .slack import *
+from .color_print import *
+from .notion import *

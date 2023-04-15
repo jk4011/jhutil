@@ -1,6 +1,7 @@
 import openai
+from .secret import OPENAI_APIKEY
 
-openai.api_key = "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"
+openai.api_key = OPENAI_APIKEY
 
 
 code_prompt = '''Act as CODEX ("COding DEsign eXpert"), an expert coder with experience in multiple coding languages.

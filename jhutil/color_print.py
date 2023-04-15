@@ -20,7 +20,7 @@ def jhprint(idx, text=""):
         9999 : Fore.BLUE,
         0 : Back.WHITE,
     }
-    color = colors[idx // 1111 * 1111]
+    color = colors[idx // 1000 * 1111]
 
     # make pretty dictionaryls
     if isinstance(text, dict):
