@@ -49,7 +49,6 @@ def get_very_recent_page(database_id):
     full_or_partial_pages = notion.databases.query(
         database_id=database_id,
     )
-    # get very resent page
     pages = full_or_partial_pages["results"]
     very_recent_page_id = pages[0]["id"]
     page_data = parse_simple_page(very_recent_page_id)
@@ -58,9 +57,7 @@ def get_very_recent_page(database_id):
 
 
 def diary_to_slack(use_chatgpt=True):
-    import jhutil;jhutil.jhprint(1111, )
     page_data = get_very_recent_page(database_id=NOTION_DATABASE_ID_DIARY)
-    import jhutil;jhutil.jhprint(2222, )
 
     texts = ""
     for type, text in page_data:
@@ -72,13 +69,10 @@ def diary_to_slack(use_chatgpt=True):
         
     texts = texts.split("[SPLIT_TOKEN]")
     texts = [text for text in texts if len(text) > 0] # remove empty text
-    import jhutil;jhutil.jhprint(3333)
 
     if use_chatgpt:
         texts = [chatgpt(text) for text in texts]
-    import jhutil;jhutil.jhprint(4444, texts)
 
     for text in texts:
         send_slack(text, channel="jinhyeok")
-        # time.sleep(3600)
-    import jhutil;jhutil.jhprint(5555, )
+        time.sleep(3600)

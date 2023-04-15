@@ -22,7 +22,6 @@ def send_slack(message, channel="gpu"):
         return False
     return True
 
-# get function and its corresponding argument
 def slack_wrapper(func, *args, **kwargs):
     try:
         import jhutil;jhutil.jhprint(0000, "started slack_wrapper")
