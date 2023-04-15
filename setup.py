@@ -13,6 +13,7 @@ setup(
         "numpy",
         "openai",
         "colorama",
+        "lovely-tensors"
     ],
     packages=["jhutil"],
     python_requires=">=3.7, <4",
