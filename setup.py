@@ -12,7 +12,7 @@ setup(
         "requests",
         "numpy",
         "openai",
-        
+        "colorama",
     ],
     packages=["jhutil"],
     python_requires=">=3.7, <4",
