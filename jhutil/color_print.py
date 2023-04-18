@@ -24,7 +24,11 @@ def jhprint(idx, text=""):
 
     # make pretty dictionaryls
     if isinstance(text, dict):
-        text = json.dumps(text, indent=4, ensure_ascii=False)
+        try:
+            text = json.dumps(text, indent=4, ensure_ascii=False)
+        except:
+            pass
+    
     # for 0000
     if idx == 0:
         idx = "0000"

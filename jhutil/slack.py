@@ -1,6 +1,7 @@
 import requests
 import json
 from .secret import SLACK_WEBHOOK_GPU, SLACK_WEBHOOK_JINHYEOK
+from slack_sdk import webhook, WebClient
 
 def send_slack(message, channel="gpu"):
     if channel == "gpu":
