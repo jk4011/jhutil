@@ -15,6 +15,7 @@ setup(
         "colorama",
         "lovely-tensors",
         "easydict",
+        "notion_client",
     ],
     packages=["jhutil"],
     python_requires=">=3.7, <4",
