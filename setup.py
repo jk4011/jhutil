@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="jhutil",
-    version="0.1.0",
+    version="0.1.2",
     description="jhutil",
     long_description_content_type="text/markdown",
     url="https://github.com/jk4011/jhutil",
@@ -16,6 +16,7 @@ setup(
         "lovely-tensors",
         "easydict",
         "notion_client",
+        "slack_sdk"
     ],
     packages=["jhutil"],
     python_requires=">=3.7, <4",

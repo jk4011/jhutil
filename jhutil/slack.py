@@ -2,6 +2,8 @@ import requests
 import json
 from .secret import SLACK_WEBHOOK_GPU, SLACK_WEBHOOK_JINHYEOK
 from slack_sdk import webhook, WebClient
+import random
+from datetime import datetime
 
 def send_slack(message, channel="gpu"):
     if channel == "gpu":
@@ -24,17 +26,67 @@ def send_slack(message, channel="gpu"):
     return True
 
 def slack_wrapper(func, *args, **kwargs):
+    import jhutil;jhutil.jhprint(0000, "started slack_wrapper")
+    
+    prcess_name = random.choice(prcess_name_set) + "/" + random.choice(prcess_name_set)
+    
+    start = datetime.now()
+    message = f"""START
+prcess_name  : {prcess_name} 
+time_start   : {start.strftime("%Y-%m-%d %H:%M:%S")}
+    """
+    jhutil.send_slack(message)
+
     try:
-        import jhutil;jhutil.jhprint(0000, "started slack_wrapper")
-        
         # run function
         func(*args, **kwargs)
+        end = datetime.now()
         
-        message = "Finished!"
+        message = f"""`END`
+prcess_name  : {prcess_name} 
+time_taken   : {end - start}
+        """
         jhutil.send_slack(message)
         import jhutil;jhutil.jhprint(3333, message)
 
     except Exception as e:
-        error_message = f"Error: ```{str(e)}```"
+        error_message = f"""*`Error`*!!!: 
+```{str(e)}```
+        """
         jhutil.send_slack(error_message)
         import jhutil;jhutil.jhprint(1111, error_message)
+    
+    
+
+
+prcess_name_set = ["팬데믹",
+"언택트",
+"화양연화",
+"공매도",
+"윤달",
+"치팅데이",
+"비례_대표",
+"거버넌스",
+"간선상차",
+"원더윅스",
+"콘텐츠",
+"인프라",
+"주무관",
+"코스피",
+"버킷리스트",
+"포스트_코로나",
+"계획_관리_지역",
+"레버리지",
+"이데올로기",
+"구상권",
+"아방가르드",
+"아카이브",
+"6하원칙",
+"코스닥",
+"리즈시절",
+"6.25전쟁",
+"좁쌀_여드름",
+"알콜성_치매",
+"개인_파산",
+"메타인지",
+"핼러윈_데이",]
