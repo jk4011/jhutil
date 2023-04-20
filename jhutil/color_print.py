@@ -43,8 +43,11 @@ def jhprint(idx, data="", yaml=False, list_one_line=True):
             else: # json
                 data = json.dumps(data, indent=4, ensure_ascii=False, default=json_default)
             if list_one_line:
-                data = re.sub(r'",\s+', '", ', data)
-                data = re.sub(r'(\d),\s+', r'\1, ', data)
+                # list or tuple in one line
+                data = re.sub(r'([\[\(])\s+', r'\1', data)
+                data = re.sub(r'(\d+,)\s+(\d+,?)\s+', r'\1 \2 ', data)
+                data = re.sub(r'(\d+,)\s+(\d+,?)\s+', r'\1 \2 ', data)
+                data = re.sub(r'(\"[\w ]*\",)\s+(\"[\w ]*\",?)\s+', r'\1 \2 ', data)
         except:
             print("hello")
             pass
@@ -54,5 +57,6 @@ def jhprint(idx, data="", yaml=False, list_one_line=True):
         idx = "0000"
 
     print(color + f"{idx} {data}" + Style.RESET_ALL)
+
 
 
