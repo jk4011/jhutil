@@ -34,23 +34,23 @@ def jhprint(idx, data="", yaml=False, list_one_line=True):
         else:
             return str(value)
 
-    # make pretty dictionaryls
-    if isinstance(data, dict):
-        
-        try:
-            if yaml:
-                data = yaml.dump(data, allow_unicode=True, default_flow_style=False)
-            else: # json
-                data = json.dumps(data, indent=4, ensure_ascii=False, default=json_default)
-            if list_one_line:
-                # list or tuple in one line
-                data = re.sub(r'([\[\(])\s+', r'\1', data)
-                data = re.sub(r'(\d+,)\s+(\d+,?)\s+', r'\1 \2 ', data)
-                data = re.sub(r'(\d+,)\s+(\d+,?)\s+', r'\1 \2 ', data)
-                data = re.sub(r'(\"[\w ]*\",)\s+(\"[\w ]*\",?)\s+', r'\1 \2 ', data)
-        except:
-            print("hello")
-            pass
+    # make pretty
+    try:
+        if yaml:
+            data = yaml.dump(data, allow_unicode=True, default_flow_style=False)
+        else: # json
+            data = json_default(data)
+            data = json.dumps(data, indent=4, ensure_ascii=False, default=json_default)
+        if list_one_line:
+            # list or tuple in one line
+            data = re.sub(r'([\[\(])\s+', r'\1', data)
+            data = re.sub(r'\s+([\]\)])', r'\1', data)
+            data = re.sub(r'(\d+,)\s+(\d+,?)\s+', r'\1 \2 ', data)
+            data = re.sub(r'(\d+,)\s+(\d+,?)\s+', r'\1 \2 ', data)
+            data = re.sub(r'(\"[\w ]*\",)\s+(\"[\w ]*\",?)\s+', r'\1 \2 ', data)
+    except:
+        print("hello")
+        pass
     
     # for 0000
     if idx == 0:
