@@ -6,8 +6,11 @@ import json
 import lovely_tensors as lt
 lt.monkey_patch()
 
+from argparse import Namespace
+import re
 
-def jhprint(idx, text=""):
+
+def jhprint(idx, data="", yaml=False, list_one_line=True):
     colors = {
         1111 : Back.RED,
         2222 : Back.YELLOW,
@@ -22,17 +25,34 @@ def jhprint(idx, text=""):
     }
     color = colors[idx // 1000 * 1111]
 
+    
+    def json_default(value):
+        if isinstance(value, Namespace):
+            return vars(value)
+        if isinstance(value, list):
+            return str(value)
+        else:
+            return str(value)
+
     # make pretty dictionaryls
-    if isinstance(text, dict):
+    if isinstance(data, dict):
+        
         try:
-            text = json.dumps(text, indent=4, ensure_ascii=False)
+            if yaml:
+                data = yaml.dump(data, allow_unicode=True, default_flow_style=False)
+            else: # json
+                data = json.dumps(data, indent=4, ensure_ascii=False, default=json_default)
+            if list_one_line:
+                # data = re.sub(r'",\s+', '", ', data)
+                data = re.sub(r'(\d),\s+', r'\1, ', data)
         except:
+            print("hello")
             pass
     
     # for 0000
     if idx == 0:
         idx = "0000"
 
-    print(color + f"{idx} {text}" + Style.RESET_ALL)
+    print(color + f"{idx} {data}" + Style.RESET_ALL)
 
 
