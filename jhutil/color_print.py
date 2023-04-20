@@ -43,7 +43,7 @@ def jhprint(idx, data="", yaml=False, list_one_line=True):
             else: # json
                 data = json.dumps(data, indent=4, ensure_ascii=False, default=json_default)
             if list_one_line:
-                # data = re.sub(r'",\s+', '", ', data)
+                data = re.sub(r'",\s+', '", ', data)
                 data = re.sub(r'(\d),\s+', r'\1, ', data)
         except:
             print("hello")
