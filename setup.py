@@ -16,7 +16,9 @@ setup(
         "lovely-tensors",
         "easydict",
         "notion_client",
-        "slack_sdk"
+        "slack_sdk",
+        "pillow",
+        
     ],
     packages=["jhutil"],
     python_requires=">=3.7, <4",
