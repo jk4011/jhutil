@@ -2,3 +2,5 @@ tmp.py
 *.pyc
 log*
 *.swp
+*.txt
+PKG-INFO
