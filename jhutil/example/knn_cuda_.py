@@ -16,25 +16,38 @@ assert torch.cuda.is_available()
 
 """
 if transpose_mode is True, 
-    ref   is Tensor [bs x nr x dim]
-    query is Tensor [bs x nq x dim]
+    src   is Tensor [bs x nr x dim]
+    dst is Tensor [bs x nq x dim]
     
     return 
         dist is Tensor [bs x nq x k]
         indx is Tensor [bs x nq x k]
 else
-    ref   is Tensor [bs x dim x nr]
-    query is Tensor [bs x dim x nq]
+    src   is Tensor [bs x dim x nr]
+    dst is Tensor [bs x dim x nq]
     
     return 
         dist is Tensor [bs x k x nq]
         indx is Tensor [bs x k x nq]
 """
 
-knn = KNN(k=10, transpose_mode=True)
+# knn
 
-ref = torch.rand(32, 1000, 5).cuda()
-query = torch.rand(32, 50, 5).cuda()
+knn = KNN(k=1, transpose_mode=True)
 
-dist, indx = knn(ref, query)  # 32 x 50 x 10
+src = torch.rand(200, 3).cuda()
+dst = torch.rand(100, 3).cuda()
+
+dist, indx = knn(src[None, :], dst[None, :])  # 32 x 50 x 10
 import jhutil;jhutil.jhprint(1111, dist)
+
+
+# naive 
+
+src = src.reshape(-1, 1, src.shape[-1])
+distance = torch.norm(src - dst, dim=-1)
+
+knn = distance.topk(1, largest=False)
+distance = knn.values.ravel().cpu()
+indices = knn.indices.ravel().cpu()
+import jhutil;jhutil.jhprint(2222, dist)

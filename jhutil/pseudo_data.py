@@ -7,8 +7,8 @@ class GeoTransformerPseudoData(Dataset):
         return 10
     
     def __getitem__(self, idx):
-        num_ref = random.randint(10000, 20000)
-        num_src = random.randint(10000, 20000)
+        num_ref = random.randint(5000, 10000)
+        num_src = random.randint(5000, 10000)
         data = {
             "scene_name": f"hello_{idx}",
             "ref_frame": 0,
