@@ -4,6 +4,7 @@ from .secret import SLACK_WEBHOOK_GPU, SLACK_WEBHOOK_JINHYEOK
 from slack_sdk import webhook, WebClient
 import random
 from datetime import datetime
+import jhutil
 
 def send_slack(message, channel="gpu"):
     if channel == "gpu":
@@ -26,7 +27,7 @@ def send_slack(message, channel="gpu"):
     return True
 
 def slack_wrapper(func, *args, **kwargs):
-    import jhutil;jhutil.jhprint(0000, "started slack_wrapper")
+    print(0000, "started slack_wrapper")
     
     prcess_name = random.choice(prcess_name_set) + "/" + random.choice(prcess_name_set)
     
@@ -47,14 +48,14 @@ prcess_name  : {prcess_name}
 time_taken   : {end - start}
         """
         jhutil.send_slack(message)
-        import jhutil;jhutil.jhprint(3333, message)
+        print(3333, message)
 
     except Exception as e:
         error_message = f"""*`Error`*!!!: 
 ```{str(e)}```
         """
         jhutil.send_slack(error_message)
-        import jhutil;jhutil.jhprint(1111, error_message)
+        print(1111, error_message)
     
     
 

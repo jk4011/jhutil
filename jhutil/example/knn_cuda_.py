@@ -39,7 +39,7 @@ src = torch.rand(200, 3).cuda()
 dst = torch.rand(100, 3).cuda()
 
 dist, indx = knn(src[None, :], dst[None, :])  # 32 x 50 x 10
-import jhutil;jhutil.jhprint(1111, dist)
+print(1111, dist)
 
 
 # naive 
@@ -50,4 +50,4 @@ distance = torch.norm(src - dst, dim=-1)
 knn = distance.topk(1, largest=False)
 distance = knn.values.ravel().cpu()
 indices = knn.indices.ravel().cpu()
-import jhutil;jhutil.jhprint(2222, dist)
+print(2222, dist)

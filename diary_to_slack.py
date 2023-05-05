@@ -2,7 +2,7 @@ from jhutil import get_very_recent_page, NOTION_DATABASE_ID_DIARY, chatgpt, send
 import time
 
 
-import jhutil;jhutil.jhprint(1111, "retreive page data...")
+print(1111, "retreive page data...")
 page_data = get_very_recent_page(database_id=NOTION_DATABASE_ID_DIARY)
 
 texts = ""
@@ -16,7 +16,7 @@ texts = texts.split("[SPLIT_TOKEN]")
 texts = [text for text in texts if len(text) > 0] # remove empty text
 
 
-import jhutil;jhutil.jhprint(2222, "sending slack...")
+print(2222, "sending slack...")
 for text in texts:
     rephrased = chatgpt(text)
     send_slack(rephrased, channel="jinhyeok")
