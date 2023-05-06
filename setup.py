@@ -18,6 +18,8 @@ setup(
         "notion_client",
         "slack_sdk",
         "pillow",
+        "meshplot",
+        "trimesh",
         
     ],
     packages=["jhutil"],
