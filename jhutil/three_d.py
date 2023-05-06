@@ -1,9 +1,9 @@
 import numpy as np
 import plotly.graph_objs as go
-import numpy as np
 import trimesh
 import numpy as np
 import matplotlib.pyplot as plt
+import torch
 
 
 def sample_point_cloud_from_mesh(mesh_file, num_points):
@@ -16,14 +16,29 @@ def sample_point_cloud_from_mesh(mesh_file, num_points):
     return point_cloud
 
 
-def show_point_clouds(point_clouds, colors, normals=None, is_random_rotate=False, s=None, range=((-1.1), (-1.1), (-1.1))):
-    # type check point_clouds is list
-    if isinstance(point_clouds, list):
-        point_clouds = np.array(point_clouds)
+def show_point_clouds(point_clouds, colors=None, normals=None, is_random_rotate=False, s=None):
+    
     if s is None:
         s = [0.3] * len(point_clouds)
+        
+    if isinstance(point_clouds, torch.Tensor):
+        point_clouds = point_clouds.numpy()
+        
+    pcds_concated = np.concatenate(point_clouds, axis=0)
+    
+    mean = pcds_concated.mean(axis=0).tolist()
+    std = pcds_concated.std()
+    range = [[mean[0] - std * 2, mean[0] + std * 2], 
+            [mean[1] - std * 2, mean[1] + std * 2],
+            [mean[2] - std * 2, mean[2] + std * 2]]
 
-
+    if colors is None:
+        def rgb_to_hex(rgb):
+            return "#{:02x}{:02x}{:02x}".format(rgb[0], rgb[1], rgb[2])
+        colors = [[0, 204, 0], [204, 0, 0], [0, 0, 204], [127, 127, 0], [127, 0, 127], [0, 127, 127], [76, 153, 0], [153, 0, 76], [76, 0, 153], [153, 76, 0], [76, 0, 153], [153, 0, 76], [204, 51, 127], [204, 51, 127], [51, 204, 127], [51, 127, 204], [127, 51, 204], [127, 204, 51], [76, 76, 178], [76, 178, 76], [178, 76, 76]]
+        colors = [rgb_to_hex(color) for color in colors]
+        colors = colors[:len(point_clouds)]
+    
     # Set up the figure and axis for the 3D plot
     fig = plt.figure(figsize=(7,7))
     ax = fig.add_subplot(111, projection='3d')
