@@ -31,10 +31,13 @@ def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
     def json_default(value):
         if isinstance(value, Namespace):
             return vars(value)
-        if isinstance(value, list):
-            return str(value)
         if isinstance(value, dict):
             return value
+        if isinstance(value, (list, tuple)):
+            if list_one_line:
+                return str(value)
+            else:
+                return value
         if isinstance(value, np.ndarray):
             return lo(value)
         else:
@@ -42,20 +45,14 @@ def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
 
     ret_str = ""
     for data in datas:
+        print("hi")
         # make pretty
         try:
             if yaml:
                 data = yaml.dump(data, allow_unicode=True, default_flow_style=False)
             else: # json
                 data = json_default(data)
-                data = json.dumps(data, indent=4, ensure_ascii=False, default=json_default)
-            if list_one_line:
-                # list or tuple in one line
-                data = re.sub(r'([\[\(])\s+', r'\1', data)
-                data = re.sub(r'\s+([\]\)])', r'\1', data)
-                data = re.sub(r'(\d+,)\s+(\d+,?)\s+', r'\1 \2 ', data)
-                data = re.sub(r'(\d+,)\s+(\d+,?)\s+', r'\1 \2 ', data)
-                data = re.sub(r'(\"[\w ]*\",)\s+(\"[\w ]*\",?)\s+', r'\1 \2 ', data)
+                data = json.dumps(data, indent=4, ensure_ascii=False)
         except:
             pass
         ret_str = ret_str + endline + str(data)
