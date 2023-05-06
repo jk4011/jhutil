@@ -35,6 +35,8 @@ def parse_simple_page(page_id):
         type = block["type"]
 
         # skip empty block
+        if "rich_text" not in block[type]:
+            continue
         if len(block[type]["rich_text"]) == 0:
             continue
         
