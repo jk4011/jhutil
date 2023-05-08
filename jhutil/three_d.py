@@ -24,14 +24,15 @@ def show_point_clouds(point_clouds, colors=None, normals=None, is_random_rotate=
     
     if s is None:
         s = [0.3] * len(point_clouds)
-        
-    if isinstance(point_clouds, torch.Tensor):
-        point_clouds = point_clouds.numpy()
+    
+    for i, pcd in enumerate(point_clouds):
+        if isinstance(pcd, torch.Tensor):
+            point_clouds[i] = point_clouds[i].numpy()
         
     pcds_concated = np.concatenate(point_clouds, axis=0)
     
     mean = pcds_concated.mean(axis=0).tolist()
-    std = pcds_concated.std()
+    std = (pcds_concated - mean).std()
     range = [[mean[0] - std * 2, mean[0] + std * 2], 
             [mean[1] - std * 2, mean[1] + std * 2],
             [mean[2] - std * 2, mean[2] + std * 2]]
@@ -49,11 +50,12 @@ def show_point_clouds(point_clouds, colors=None, normals=None, is_random_rotate=
 
     if normals is None:
         # Scatter plot for the 3D coordinates
-        for points, color, s_ in zip(point_clouds, colors, s):
+        for i, (points, color, s_) in enumerate(zip(point_clouds, colors, s)):
             if is_random_rotate:
                 points = _random_rotate(points)
             
-            ax.scatter(points[:, 0], points[:, 1], points[:, 2], '.', color=color, s=s_)
+            ax.scatter(points[:, 0], points[:, 1], points[:, 2], '.', color=color, s=s_, label=i)
+
     else:
         # Scatter plot for the 3D coordinates
         for points, normal, color, s_ in zip(point_clouds, normals, colors, s):
@@ -68,6 +70,9 @@ def show_point_clouds(point_clouds, colors=None, normals=None, is_random_rotate=
                       normal_mean[0], normal_mean[1], normal_mean[2], length=0.5, color=color, alpha=1)
 
     # Set labels for the axis
+    l = plt.legend(loc="upper right")
+    for text, color in zip(l.get_texts(), colors):
+        text.set_color(color)
     ax.set_xlabel('X axis')
     ax.set_ylabel('Y axis')
     ax.set_zlabel('Z axis')
@@ -222,5 +227,6 @@ def quat_trans_transform(quaternion, translation, point_cloud):
     last_row = torch.tensor([[0.0, 0.0, 0.0, 1.0]])
     transform_matrix = torch.cat((rotation_matrix, translation), dim=1)
     transform_matrix = torch.cat((transform_matrix, last_row), dim=0)
+    import jhutil;jhutil.jhprint(1111, transform_matrix[:3, :3])
 
     return matrix_transform(transform_matrix, point_cloud)
