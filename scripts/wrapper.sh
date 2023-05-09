@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 # Send to slack channel that the command is started
 emoji=:kobugi:
