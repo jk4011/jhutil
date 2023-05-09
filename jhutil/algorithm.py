@@ -1,9 +1,8 @@
 import torch
-from knn_cuda import KNN
-import gc
 import jhutil
 
 def knn(src, dst, k=1, is_naive=False):
+    from knn_cuda import KNN
     """return k nearest neighbors"""
 
     if not isinstance(src, torch.Tensor):

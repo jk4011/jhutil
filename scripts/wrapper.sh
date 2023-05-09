@@ -5,13 +5,13 @@ emoji=:kobugi:
 slack.sh $emoji \`start!\` $emoji \`\`\`$@\`\`\`
 
 # Run the specified command
-$@ 2>&1 | tee tmp.txt
+$@ 2> >(tee /tmp/log >&2)
 
 # Get the exit status of $@ 
 exit_bash="${PIPESTATUS[0]}" exit_zsh="${pipestatus[1]}"
 exit=$exit_bash$exit_zsh
 
-output=`cat tmp.txt`
+output=`cat /tmp/log`
 
 # Check the exit code of the command
 if [ $exit -ne 0 ]; then
