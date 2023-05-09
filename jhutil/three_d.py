@@ -5,8 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 import os
-import meshplot as mp
 import trimesh
+import math
 
 # visualization 
 
@@ -106,6 +106,7 @@ def _random_rotate(vertices):
 
 def show_multiple_objs(obj_files, colors=None, is_random_rotate=False, library="go"):
     if library == "meshplot":
+        import meshplot as mp
         v, f = parse_obj_file(obj_files[0])
         p = mp.plot(v, f)
         
@@ -176,6 +177,7 @@ def parse_obj_file(filename):
 def show_obj(obj_file, color=[1, 0, 0], library="go"):
     vertices, faces = parse_obj_file(obj_file)
     if library == "meshplot":
+        import meshplot as mp
         mp.plot(vertices, faces, c=color)
     elif library == "go":
         x, y, z = vertices[:, 0], vertices[:, 1], vertices[:, 2]

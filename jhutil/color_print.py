@@ -45,7 +45,6 @@ def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
 
     ret_str = ""
     for data in datas:
-        print("hi")
         # make pretty
         try:
             if yaml:

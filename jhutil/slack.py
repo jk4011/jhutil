@@ -11,6 +11,9 @@ def send_slack(message, channel="gpu"):
         webhook_url = SLACK_WEBHOOK_GPU
     elif channel == "jinhyeok":
         webhook_url = SLACK_WEBHOOK_JINHYEOK
+    else:
+        import jhutil;jhutil.jhprint(1111, channel, "is not a valid channel name")
+        raise NotImplemented
     payload = {
         "text": "<!channel>",
         "attachments": [{"text": message}]
