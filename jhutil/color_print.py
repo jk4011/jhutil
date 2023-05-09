@@ -10,7 +10,7 @@ from argparse import Namespace
 import re
 import numpy as np
 from lovely_numpy import lo
-
+from copy import deepcopy
 
 def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
     colors = {
@@ -26,12 +26,16 @@ def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
         0 : Back.WHITE,
     }
     color = colors[idx // 1000 * 1111]
+    datas = deepcopy(datas)
 
     
     def json_default(value):
         if isinstance(value, Namespace):
             return vars(value)
         if isinstance(value, dict):
+            for k, v in value.items():
+                if isinstance(v, np.ndarray):
+                    value[k] = lo(v)
             return value
         if isinstance(value, (list, tuple)):
             if list_one_line:
@@ -51,7 +55,7 @@ def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
                 data = yaml.dump(data, allow_unicode=True, default_flow_style=False)
             else: # json
                 data = json_default(data)
-                data = json.dumps(data, indent=4, ensure_ascii=False)
+                data = json.dumps(data, indent=4, ensure_ascii=False, default=json_default)
         except:
             pass
         ret_str = ret_str + endline + str(data)
