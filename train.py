@@ -3,15 +3,23 @@ import time
 import sys
 
 gpus = sys.argv[1]
+try:
+    duration = sys.argv[2]
+except:
+    duration = 60
 gpus = gpus.split(",")
 
-for i in range(2000):
+# time check 
+start = time.time()
+
+while True:
     for gpu in gpus:
         a = torch.randn((10000, 10000), device=f'cuda:{gpu}')
-        b = torch.randn((300, 300), device=f'cuda:{gpu}')
+        b = torch.randn((100, 100), device=f'cuda:{gpu}')
         for i in range(10):
             b = b @ b
-
-        print(1111, i, gpu)
         del a
+    # if start time is greater than 60 miniutes, break
+    if time.time() - start > 60 * duration:
+        break
     torch.cuda.empty_cache()
