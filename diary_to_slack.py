@@ -27,4 +27,4 @@ print("sending to slack...")
 for text in text_weighted:
     rephrased = chatgpt(text)
     send_slack(rephrased, channel="jinhyeok")
-    time.sleep(3600)
+    time.sleep(7200)
