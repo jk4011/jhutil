@@ -7,7 +7,7 @@ gpus = gpus.split(",")
 
 for i in range(2000):
     for gpu in gpus: 
-        a = torch.randn(1000000, device=f'cuda:{gpu}')
+        a = torch.randn((1000, 1000), device=f'cuda:{gpu}')
         for i in range(10):
             a = a @ a
         del a
