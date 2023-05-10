@@ -1,3 +1,3 @@
 
 cd $jhutil_path
-python send_slack.py $1
+python train.py $1
