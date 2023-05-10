@@ -22,4 +22,5 @@ while True:
     # if start time is greater than 60 miniutes, break
     if time.time() - start > 60 * duration:
         break
+    time.sleep(0.5)
     torch.cuda.empty_cache()
