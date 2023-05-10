@@ -1,5 +1,3 @@
-1111 9 1
-1111 9 2
 import torch
 import time
 import sys
