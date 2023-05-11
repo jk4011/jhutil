@@ -14,17 +14,29 @@ for type, text in page_data:
     
 texts = texts.split("[SPLIT_TOKEN]")
 texts = [text for text in texts if len(text) > 0] # remove empty text
-num_sends = [text.count("⭐") for text in texts]
+gpt_inputs = [text for text in texts if "⭐" in text]
+pure_texts = [text for text in texts if "📩" in text]
+
 texts = [text.replace("⭐", "") for text in texts]
 
-text_weighted = []
-for text, num_send in zip(texts, num_sends):
-    text_weighted.extend([text] * num_send)
+pure_weighted = []
+for text in pure_texts:
+    num_send = text.count("📩")
+    pure_weighted.extend([text.replace("📩", "")] * num_send)
 
 
-random.shuffle(text_weighted)
-print("sending to slack...")
-for text in text_weighted:
+gpt_weighted = []
+for text in gpt_inputs:
+    num_send = text.count("⭐")
+    gpt_weighted.extend([text.replace("⭐", "")] * num_send)
+
+print("sending pure messages...")
+for text in pure_weighted:
+    send_slack(text, channel="jinhyeok")
+    time.sleep(3600)
+
+print("sending gpt messages...")
+for text in gpt_weighted:
     rephrased = chatgpt(text)
     send_slack(rephrased, channel="jinhyeok")
-    time.sleep(7200)
+    time.sleep(3600)
