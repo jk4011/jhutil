@@ -1,34 +1,33 @@
-
-from colorama import Fore, Back, Style
-import json
-
-# make pretty tensor
-import lovely_tensors as lt
-lt.monkey_patch()
-
-from argparse import Namespace
 import re
 import numpy as np
+import lovely_tensors as lt
+import json
+from argparse import Namespace
 from lovely_numpy import lo
-from copy import deepcopy
+from copy import copy
+from colorama import Fore, Back, Style
+
+lt.monkey_patch()
+
 
 def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
     colors = {
-        1111 : Back.RED,
-        2222 : Back.YELLOW,
-        3333 : Back.GREEN,
-        4444 : Back.BLUE,
-        5555 : Back.MAGENTA,
-        6666 : Fore.RED,
-        7777 : Fore.YELLOW,
-        8888 : Fore.GREEN,
-        9999 : Fore.BLUE,
-        0 : Back.WHITE,
+        1111: Back.RED,
+        2222: Back.YELLOW,
+        3333: Back.GREEN,
+        4444: Back.BLUE,
+        5555: Back.MAGENTA,
+        6666: Fore.RED,
+        7777: Fore.YELLOW,
+        8888: Fore.GREEN,
+        9999: Fore.BLUE,
+        0: Back.WHITE,
     }
-    color = colors[idx // 1000 * 1111]
-    datas = deepcopy(datas)
-
     
+    
+    color = colors[idx // 1000 * 1111]
+    datas = copy(datas)
+
     def json_default(value):
         if isinstance(value, Namespace):
             return vars(value)
@@ -52,19 +51,20 @@ def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
         # make pretty
         try:
             if yaml:
-                data = yaml.dump(data, allow_unicode=True, default_flow_style=False)
-            else: # json
+                data = yaml.dump(data, allow_unicode=True,
+                                 default_flow_style=False)
+            else:  # json
                 data = json_default(data)
-                data = json.dumps(data, indent=4, ensure_ascii=False, default=json_default)
+                data = json.dumps(
+                    data, indent=4, ensure_ascii=False, default=json_default)
         except:
             pass
+
+        
         ret_str = ret_str + endline + str(data)
-    
+
     # for 0000
     if idx == 0:
         idx = "0000"
 
     print(color + f"{idx} {ret_str}" + Style.RESET_ALL)
-
-
-
