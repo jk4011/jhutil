@@ -23,7 +23,7 @@ def sample_point_cloud_from_mesh(mesh_file, num_points):
 
 
 def show_point_clouds(point_clouds, colors=None, normals=None, is_random_rotate=False, s=None, subsample_ratio=1.0):
-    
+
     point_clouds = [pcd[::int(1.0 / subsample_ratio)] for pcd in point_clouds]
     if s is None:
         s = [0.3] * len(point_clouds)
@@ -210,7 +210,7 @@ def show_meshes(folder_path, indices=None):
     else:
         file_list = [file_list[idx] for idx in indices]
         show_multiple_objs(file_list, PALATTE[indices])
-    
+
     jhutil.jhprint(0000, file_list, endline='\n', list_one_line=False)
 
 
@@ -241,3 +241,31 @@ def quat_trans_transform(quaternion, translation, point_cloud):
     transform_matrix = torch.cat((transform_matrix, last_row), dim=0)
 
     return matrix_transform(transform_matrix, point_cloud)
+
+
+def mesh_intersection(mesh1, mesh2, file_loc):
+    # Save intersection of two meshes
+    import pymeshlab
+    ms = pymeshlab.MeshSet()
+
+    # Add the input meshes to the MeshSet
+    ms.load_new_mesh(mesh1)
+    ms.load_new_mesh(mesh2)
+
+    # Apply the boolean intersection filter
+    ms.apply_filter(
+        'generate_boolean_intersection',
+        first_mesh=0,
+        second_mesh=1,
+        transfer_face_color=False,
+        transfer_face_quality=False,
+        transfer_vert_color=False,
+        transfer_vert_quality=False)
+
+    ms.save_current_mesh(file_loc)
+
+
+def calculate_mesh_volume(mesh_file):
+    # Load the mesh
+    mesh = trimesh.load_mesh(mesh_file)
+    return mesh.volume
