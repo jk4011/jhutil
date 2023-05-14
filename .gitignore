@@ -1,6 +1,6 @@
 tmp.py
 *.pyc
-log*
+log_*
 *.swp
 *.txt
 PKG-INFO
