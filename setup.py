@@ -20,7 +20,7 @@ setup(
         "pillow",
         "trimesh",
         "plotly",
-        
+        "PyYAML",
     ],
     packages=["jhutil"],
     python_requires=">=3.7, <4",
