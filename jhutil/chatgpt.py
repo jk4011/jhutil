@@ -23,12 +23,13 @@ daily_prompt = '''
 이제 텍스트 입력을 시작할게:
 '''
 
-def chatgpt(promtpt:str, sys_prompt:str=daily_prompt):
+
+def chatgpt(promtpt: str, sys_prompt: str = daily_prompt):
     completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo", 
-        messages = [
-            {"role": "system", "content" : sys_prompt},
-            {"role": "user", "content" : promtpt}
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": sys_prompt},
+            {"role": "user", "content": promtpt}
         ]
     )
 

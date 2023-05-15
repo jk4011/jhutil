@@ -23,8 +23,7 @@ def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
         9999: Fore.BLUE,
         0: Back.WHITE,
     }
-    
-    
+
     color = colors[idx // 1000 * 1111]
     datas = copy(datas)
 
@@ -60,7 +59,6 @@ def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
         except:
             pass
 
-        
         ret_str = ret_str + endline + str(data)
 
     # for 0000

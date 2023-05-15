@@ -1,3 +1,4 @@
+from notion_client.helpers import is_full_page
 import requests
 import os
 from notion_client import Client
@@ -12,17 +13,15 @@ import time
 
 notion = Client(auth=NOTION_TOKEN)
 
-from notion_client.helpers import is_full_page
-
 
 def parse_simple_page(page_id):
     """Parse simple notion page. 
     The blocks in page must not have any child block.
-    
+
     For example, suppose a notion page like this:
     ## 주제
     내용
-    
+
     Then the output is like:
     [
         ['heading_2', '주제'], 
@@ -39,13 +38,14 @@ def parse_simple_page(page_id):
             continue
         if len(block[type]["rich_text"]) == 0:
             continue
-        
+
         text = block[type]["rich_text"][0]["plain_text"]
 
         result = [type, text]
         page_data.append(result)
-        
+
     return page_data
+
 
 def get_very_recent_page(database_id):
     full_or_partial_pages = notion.databases.query(
@@ -56,4 +56,3 @@ def get_very_recent_page(database_id):
     page_data = parse_simple_page(very_recent_page_id)
 
     return page_data
-

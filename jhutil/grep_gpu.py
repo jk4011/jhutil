@@ -7,7 +7,7 @@ if __name__ == "__main__":
 
     # Define the arguments you want to get
     parser.add_argument('--gpus', type=list, help='Your name')
-    
+
     args = parser.parse_args()
     tmp = []
     for gpu in args.gpus:
