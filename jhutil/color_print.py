@@ -25,7 +25,6 @@ def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
     }
 
     color = colors[idx // 1000 * 1111]
-    datas = copy(datas)
 
     def json_default(value):
         if isinstance(value, Namespace):
@@ -33,7 +32,7 @@ def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
         if isinstance(value, dict):
             for k, v in value.items():
                 if isinstance(v, np.ndarray):
-                    value[k] = lo(v)
+                    value[k] = lo(copy(v))
             return value
         if isinstance(value, (list, tuple)):
             if list_one_line:

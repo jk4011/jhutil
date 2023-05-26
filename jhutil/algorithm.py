@@ -33,9 +33,8 @@ def knn(src, dst, k=1, is_naive=False, is_sklearn=False):
 
     # gpu
     else:
-        num_gpus = torch.cuda.device_count()
-        src = src.cuda(num_gpus - 1).contiguous()
-        dst = dst.cuda(num_gpus - 1).contiguous()
+        src = src.cuda().contiguous()
+        dst = dst.cuda().contiguous()
 
         from knn_cuda import KNN
         knn = KNN(k=1, transpose_mode=True)
