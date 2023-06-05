@@ -21,6 +21,7 @@ setup(
         "trimesh",
         "plotly",
         "PyYAML",
+        "coloredlogs",
     ],
     packages=["jhutil"],
     python_requires=">=3.7, <4",
