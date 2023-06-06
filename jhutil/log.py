@@ -17,7 +17,7 @@ class LessThanFilter(logging.Filter):
 def create_logger(log_file=None):
     logger = logging.getLogger()
     logger.handlers.clear()
-    logger.setLevel(level=logging.DEBUG)
+    logger.setLevel(level=logging.INFO)
     logger.propagate = False
 
     format_str = '[%(asctime)s] [%(levelname).4s] %(message)s'
@@ -30,7 +30,7 @@ def create_logger(log_file=None):
     colored_formatter = coloredlogs.ColoredFormatter(format_str)
 
     logging_handler_out = logging.StreamHandler(sys.stdout)
-    logging_handler_out.setLevel(logging.DEBUG)
+    logging_handler_out.setLevel(logging.INFO)
     logging_handler_out.addFilter(LessThanFilter(logging.WARNING))
     logging_handler_out.setFormatter(colored_formatter)
     logger.addHandler(logging_handler_out)
