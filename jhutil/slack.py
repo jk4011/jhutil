@@ -1,6 +1,6 @@
 import requests
 import json
-from .secret import SLACK_WEBHOOK_GPU, SLACK_WEBHOOK_JINHYEOK
+from .secret import SLACK_WEBHOOK_PROCESS, SLACK_WEBHOOK_JINHYEOK
 from slack_sdk import webhook, WebClient
 import random
 from datetime import datetime
@@ -9,7 +9,7 @@ import jhutil
 
 def send_slack(message, channel="gpu"):
     if channel == "gpu":
-        webhook_url = SLACK_WEBHOOK_GPU
+        webhook_url = SLACK_WEBHOOK_PROCESS
     elif channel == "jinhyeok":
         webhook_url = SLACK_WEBHOOK_JINHYEOK
     else:
