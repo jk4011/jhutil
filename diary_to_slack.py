@@ -11,9 +11,10 @@ for type, text in page_data:
         texts = texts + "[SPLIT_TOKEN]" + "## " + text + "\n\n"
     else:
         texts = texts + text + "\n"
-    
+
 texts = texts.split("[SPLIT_TOKEN]")
-texts = [text for text in texts if len(text) > 0] # remove empty text
+texts = [text for text in texts if len(text) > 0]  # remove empty text
+
 gpt_inputs = [text for text in texts if "⭐" in text]
 pure_texts = [text for text in texts if "📩" in text]
 
