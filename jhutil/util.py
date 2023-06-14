@@ -10,6 +10,19 @@ import os
 import os.path as osp
 
 
+def to_cuda(x):
+    r"""Move all tensors to cuda."""
+    if isinstance(x, list):
+        x = [to_cuda(item) for item in x]
+    elif isinstance(x, tuple):
+        x = (to_cuda(item) for item in x)
+    elif isinstance(x, dict):
+        x = {key: to_cuda(value) for key, value in x.items()}
+    elif isinstance(x, torch.Tensor):
+        x = x.cuda()
+    return x
+
+
 def instantiate_from_config(config):
     if "target" not in config:
         if config == '__is_first_stage__':

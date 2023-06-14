@@ -4,7 +4,7 @@ import lovely_tensors as lt
 import json
 from argparse import Namespace
 from lovely_numpy import lo
-from copy import copy
+from copy import copy, deepcopy
 from colorama import Fore, Back, Style
 
 lt.monkey_patch()
@@ -25,7 +25,6 @@ def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
     }
 
     color = colors[idx // 1000 * 1111]
-    datas = copy(datas)
 
     def json_default(value):
         if isinstance(value, Namespace):
@@ -33,7 +32,7 @@ def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
         if isinstance(value, dict):
             for k, v in value.items():
                 if isinstance(v, np.ndarray):
-                    value[k] = lo(v)
+                    value[k] = lo(copy(v))
             return value
         if isinstance(value, (list, tuple)):
             if list_one_line:
@@ -41,7 +40,7 @@ def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
             else:
                 return value
         if isinstance(value, np.ndarray):
-            return lo(value)
+            return lo(copy(value))
         else:
             return str(value)
 
