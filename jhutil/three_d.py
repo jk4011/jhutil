@@ -114,7 +114,13 @@ def _random_rotate(vertices):
     return vertices
 
 
-def show_multiple_objs(obj_files, colors=None, is_random_rotate=False, library="go"):
+def show_multiple_objs(obj_files, colors=None, is_random_rotate=False, library="go", transformations=None):
+    if transformations is not None:
+        assert len(obj_files) == len(transformations)
+    else:
+        transformations = [torch.eye(4)] * len(obj_files)
+
+        
     if library == "meshplot":
         import meshplot as mp
         v, f = parse_obj_file(obj_files[0])
@@ -134,6 +140,7 @@ def show_multiple_objs(obj_files, colors=None, is_random_rotate=False, library="
 
         for idx, obj_file in enumerate(obj_files):
             vertices, faces = parse_obj_file(obj_file)
+            vertices = matrix_transform(transformations[idx], torch.tensor(vertices))
             x, y, z = vertices[:, 0], vertices[:, 1], vertices[:, 2]
             i, j, k = faces[:, 0], faces[:, 1], faces[:, 2]
 
@@ -231,7 +238,7 @@ def matrix_transform(transform_matrix, point_cloud):
     return transformed_point_cloud
 
 
-def quat_trans_transform(quaternion, translation, point_cloud):
+def matrix_from_quat_trans(quaternion, translation):
     from pytorch3d.transforms import quaternion_to_matrix
     rotation_matrix = quaternion_to_matrix(torch.tensor(quaternion))
     translation = translation.reshape(3, 1)
@@ -239,7 +246,11 @@ def quat_trans_transform(quaternion, translation, point_cloud):
     last_row = torch.tensor([[0.0, 0.0, 0.0, 1.0]])
     transform_matrix = torch.cat((rotation_matrix, translation), dim=1)
     transform_matrix = torch.cat((transform_matrix, last_row), dim=0)
+    return transform_matrix
 
+
+def quat_trans_transform(quaternion, translation, point_cloud):
+    transform_matrix = matrix_from_quat_trans(quaternion, translation)
     return matrix_transform(transform_matrix, point_cloud)
 
 
