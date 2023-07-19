@@ -4,7 +4,7 @@ import lovely_tensors as lt
 import json
 from argparse import Namespace
 from lovely_numpy import lo
-from copy import copy
+from copy import copy, deepcopy
 from colorama import Fore, Back, Style
 
 lt.monkey_patch()
@@ -40,7 +40,7 @@ def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
             else:
                 return value
         if isinstance(value, np.ndarray):
-            return lo(value)
+            return lo(copy(value))
         else:
             return str(value)
 
