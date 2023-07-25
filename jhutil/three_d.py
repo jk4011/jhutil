@@ -114,7 +114,7 @@ def _random_rotate(vertices):
     return vertices
 
 
-def show_multiple_objs(obj_files, colors=None, is_random_rotate=False, library="go", transformations=None):
+def show_multiple_objs(obj_files, colors=None, is_random_rotate=False, library="go", transformations=None, scale=1):
     if transformations is not None:
         assert len(obj_files) == len(transformations)
     else:
@@ -130,6 +130,7 @@ def show_multiple_objs(obj_files, colors=None, is_random_rotate=False, library="
             if i == 0:
                 continue
             vertices, faces = parse_obj_file(obj_file)
+            vertices *= scale
             if is_random_rotate:
                 vertices = _random_rotate(vertices)
             # color = colors[i] if colors and len(colors) > i else None
@@ -140,6 +141,7 @@ def show_multiple_objs(obj_files, colors=None, is_random_rotate=False, library="
 
         for idx, obj_file in enumerate(obj_files):
             vertices, faces = parse_obj_file(obj_file)
+            vertices *= scale
             vertices = matrix_transform(transformations[idx], torch.tensor(vertices))
             x, y, z = vertices[:, 0], vertices[:, 1], vertices[:, 2]
             i, j, k = faces[:, 0], faces[:, 1], faces[:, 2]
