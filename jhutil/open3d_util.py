@@ -54,6 +54,14 @@ def open3d_ransac(source_down, target_down, source_fpfh, target_fpfh, voxel_size
 
 
 def open3d_icp(src_pcd, ref_pcd, trans_init=np.identity(4), src_normal=None, ref_normal=None, voxel_size=0.01, part_assembly=True):
+    if src_pcd.dim() != 2 or ref_pcd.dim() != 2:
+        raise ValueError("src_pcd and ref_pcd must be 2D tensor")
+    if src_pcd.shape[1] != 3 or ref_pcd.shape[1] != 3:
+        raise ValueError("src_pcd and ref_pcd must have 3 columns")
+    if len(src_pcd) == 0 or len(ref_pcd) == 0:
+        return trans_init
+        # raise ValueError("src_pcd and ref_pcd must have at least one point")
+        
     distance_threshold = voxel_size * 0.4
 
     src, src_down, source_fpfh = open3d_preprocess_pcd(src_pcd, src_normal)
