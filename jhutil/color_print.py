@@ -15,12 +15,12 @@ def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
         1111: Back.RED,
         2222: Back.YELLOW,
         3333: Back.GREEN,
-        4444: Back.BLUE,
-        5555: Back.MAGENTA,
+        4444: Back.CYAN,
+        5555: Back.BLUE,
         6666: Fore.RED,
         7777: Fore.YELLOW,
         8888: Fore.GREEN,
-        9999: Fore.BLUE,
+        9999: Fore.CYAN,
         0: Back.WHITE,
     }
 
