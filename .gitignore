@@ -4,3 +4,14 @@ log_*
 *.swp
 *.txt
 PKG-INFO
+.vscode
+*.pyc
+*.zip
+splits
+images/
+*.pth
+*.pkl
+train/
+val/
+wandb/
+tmp*
