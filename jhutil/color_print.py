@@ -10,7 +10,7 @@ from colorama import Fore, Back, Style
 lt.monkey_patch()
 
 
-def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
+def jhprint(key, *datas, yaml=False, list_one_line=True, endline=' '):
     colors = {
         1111: Back.RED,
         2222: Back.YELLOW,
@@ -22,9 +22,20 @@ def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
         8888: Fore.GREEN,
         9999: Fore.CYAN,
         0: Back.WHITE,
+        "aaaa": Back.RED,
+        "bbbb": Back.YELLOW,
+        "cccc": Back.GREEN,
+        "dddd": Back.CYAN,
+        "eeee": Back.BLUE,
+        "ffff": Fore.RED,
+        "gggg": Fore.YELLOW,
+        "hhhh": Fore.GREEN,
+        "iiii": Fore.CYAN,
     }
-
-    color = colors[idx // 1000 * 1111]
+    if isinstance(key, int):
+        color = colors[key // 1000 * 1111]
+    elif isinstance(key, str):
+        color = colors[key]
 
     def json_default(value):
         if isinstance(value, Namespace):
@@ -61,7 +72,10 @@ def jhprint(idx, *datas, yaml=False, list_one_line=True, endline=' '):
         ret_str = ret_str + endline + str(data)
 
     # for 0000
-    if idx == 0:
-        idx = "0000"
-
-    print(color + f"{idx} {ret_str}" + Style.RESET_ALL)
+    if isinstance(key, int):
+        if key == 0:
+            key = "0000"
+        print(color + f"{key} {ret_str}" + Style.RESET_ALL)
+    else:
+        print(Back.WHITE + key[0:2] + Style.RESET_ALL +
+              color + f"{key[2:]} {ret_str}" + Style.RESET_ALL)
