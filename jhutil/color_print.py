@@ -9,8 +9,33 @@ from colorama import Fore, Back, Style
 
 lt.monkey_patch()
 
+disabled = False
+diiabled_alphabet = False
+
+
+def activate_jhprint():
+    global disabled, diiabled_alphabet
+    disabled = False
+    diiabled_alphabet = False
+
+
+def disable_jhprint(alphabet_only=False):
+    global disabled, diiabled_alphabet
+
+    if alphabet_only:
+        disabled = False
+        diiabled_alphabet = True
+    else:
+        disabled = True
+        diiabled_alphabet = False
+
 
 def jhprint(key, *datas, yaml=False, list_one_line=True, endline=' '):
+    if disabled:
+        return
+    if diiabled_alphabet and re.match(r'[a-z]', str(key)):
+        return
+
     colors = {
         1111: Back.RED,
         2222: Back.YELLOW,
