@@ -30,11 +30,14 @@ def disable_jhprint(alphabet_only=False):
         diiabled_alphabet = False
 
 
-def jhprint(key, *datas, yaml=False, list_one_line=True, endline=' '):
-    if disabled:
-        return
-    if diiabled_alphabet and re.match(r'[a-z]', str(key)):
-        return
+def jhprint(key, *datas, yaml=False, list_one_line=True, endline=' ', force=False):
+    if force:
+        pass
+    else:
+        if disabled:
+            return
+        if diiabled_alphabet and re.match(r'[a-z]', str(key)):
+            return
 
     colors = {
         1111: Back.RED,
