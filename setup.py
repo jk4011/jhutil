@@ -25,7 +25,7 @@ setup(
         "coloredlogs",
     ],
     packages=["jhutil"],
-    python_requires=">=3.7, <4",
+    python_requires=">=3.6, <4",
     project_urls={
         "Source": "https://github.com/jk4011/jhutil",
     },
