@@ -79,7 +79,10 @@ def jhprint(key, *datas, yaml=False, list_one_line=True, endline=' ', force=Fals
             else:
                 return value
         if isinstance(value, np.ndarray):
-            return lo(copy(value))
+            ret = copy(value)
+            if ret.dtype == bool:
+                ret = ret.astype(int)
+            return lo(ret)
         else:
             return str(value)
 
