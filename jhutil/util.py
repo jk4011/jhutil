@@ -10,6 +10,11 @@ import os
 import os.path as osp
 
 
+def is_jupyter():
+    import __main__ as main
+    return not hasattr(main, '__file__')
+
+
 def to_cuda(x):
     r"""Move all tensors to cuda."""
     if isinstance(x, list):
