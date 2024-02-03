@@ -120,9 +120,9 @@ def show_point_clouds(point_clouds, colors=None, normals=None, is_random_rotate=
 
 
 def show_pcd(pcd: torch.Tensor,
-             point_size: float = 0.5,
              color: Union[torch.Tensor, None] = None,
-             normal: Union[torch.Tensor, None] = None):
+             normal: Union[torch.Tensor, None] = None,
+             point_size: float = 0.5):
 
     result = pd.DataFrame()
     result["x"] = pcd[:, 0]
