@@ -40,21 +40,21 @@ def jhprint(key, *datas, yaml=False, list_one_line=True, endline=' ', force=Fals
             return
 
     colors = {
-        1111: Back.RED,
-        2222: Back.YELLOW,
-        3333: Back.GREEN,
-        4444: Back.CYAN,
-        5555: Back.BLUE,
+        1111: Back.RED + Fore.BLACK,
+        2222: Back.YELLOW + Fore.BLACK,
+        3333: Back.GREEN + Fore.BLACK,
+        4444: Back.CYAN + Fore.BLACK,
+        5555: Back.BLUE + Fore.BLACK,
         6666: Fore.RED,
         7777: Fore.YELLOW,
         8888: Fore.GREEN,
         9999: Fore.CYAN,
-        0: Back.WHITE,
-        "aaaa": Back.RED,
-        "bbbb": Back.YELLOW,
-        "cccc": Back.GREEN,
-        "dddd": Back.CYAN,
-        "eeee": Back.BLUE,
+        0: Back.WHITE + Fore.BLACK,
+        "aaaa": Back.RED + Fore.BLACK,
+        "bbbb": Back.YELLOW + Fore.BLACK,
+        "cccc": Back.GREEN + Fore.BLACK,
+        "dddd": Back.CYAN + Fore.BLACK,
+        "eeee": Back.BLUE + Fore.BLACK,
         "ffff": Fore.RED,
         "gggg": Fore.YELLOW,
         "hhhh": Fore.GREEN,
@@ -98,8 +98,7 @@ def jhprint(key, *datas, yaml=False, list_one_line=True, endline=' ', force=Fals
             pass
 
         ret_str = ret_str + endline + str(data)
-
-    # for 0000
+    
     if isinstance(key, int):
         if key == 0:
             key = "0000"
