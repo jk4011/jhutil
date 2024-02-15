@@ -66,12 +66,13 @@ def jhprint(key, *datas, yaml=False, list_one_line=True, endline=' ', force=Fals
         color = colors[key]
 
     def json_default(value):
+        value = deepcopy(value)
         if isinstance(value, Namespace):
             return vars(value)
         if isinstance(value, dict):
             for k, v in value.items():
                 if isinstance(v, np.ndarray):
-                    value[k] = lo(copy(v))
+                    value[k] = lo(v)
             return value
         if isinstance(value, (list, tuple)):
             if list_one_line:
@@ -79,10 +80,9 @@ def jhprint(key, *datas, yaml=False, list_one_line=True, endline=' ', force=Fals
             else:
                 return value
         if isinstance(value, np.ndarray):
-            ret = copy(value)
-            if ret.dtype == bool:
-                ret = ret.astype(int)
-            return lo(ret)
+            if value.dtype == bool:
+                value = value.astype(int)
+            return lo(value)
         else:
             return str(value)
 
