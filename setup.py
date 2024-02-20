@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="jhutil",
-    version="0.1.5",
+    version="0.1.6",
     description="jhutil",
     long_description_content_type="text/markdown",
     url="https://github.com/jk4011/jhutil",
