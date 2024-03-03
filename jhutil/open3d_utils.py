@@ -4,7 +4,7 @@ import copy
 import torch
 
 
-def open3d_preprocess_pcd(pcd_raw, normal=None, voxel_size=0.01):
+def preprocess_pcd_open3d(pcd_raw, normal=None, voxel_size=0.01):
 
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(pcd_raw)
@@ -27,7 +27,7 @@ def open3d_preprocess_pcd(pcd_raw, normal=None, voxel_size=0.01):
     return pcd, pcd_down, pcd_fpfh
 
 
-def open3d_ransac(source_down, target_down, source_fpfh, target_fpfh, voxel_size, normal_angle=0.05):
+def ransac_open3d(source_down, target_down, source_fpfh, target_fpfh, voxel_size, normal_angle=0.05):
     distance_threshold = voxel_size * 1.5
     print(":: RANSAC registration on point clouds.")
     # print("   Since the downsampling voxel size is %.3f," % voxel_size)
@@ -53,7 +53,7 @@ def open3d_ransac(source_down, target_down, source_fpfh, target_fpfh, voxel_size
     return result.transformation
 
 
-def open3d_icp(src_pcd, ref_pcd, trans_init=np.identity(4), src_normal=None, ref_normal=None, voxel_size=0.01, part_assembly=True):
+def icp_open3d(src_pcd, ref_pcd, trans_init=np.identity(4), src_normal=None, ref_normal=None, voxel_size=0.01, part_assembly=True):
     if src_pcd.dim() != 2 or ref_pcd.dim() != 2:
         raise ValueError("src_pcd and ref_pcd must be 2D tensor")
     if src_pcd.shape[1] != 3 or ref_pcd.shape[1] != 3:
@@ -64,8 +64,8 @@ def open3d_icp(src_pcd, ref_pcd, trans_init=np.identity(4), src_normal=None, ref
         
     distance_threshold = voxel_size * 0.4
 
-    src, src_down, source_fpfh = open3d_preprocess_pcd(src_pcd, src_normal)
-    ref, dst_down, target_fpfh = open3d_preprocess_pcd(ref_pcd, ref_normal)
+    src, src_down, source_fpfh = preprocess_pcd_open3d(src_pcd, src_normal)
+    ref, dst_down, target_fpfh = preprocess_pcd_open3d(ref_pcd, ref_normal)
 
     if part_assembly:
         normal = -np.array(ref.normals)
@@ -89,7 +89,7 @@ def refine_registration(source, target, source_fpfh, target_fpfh, voxel_size, T)
 
 
 
-def open3d_fast_global_registration(source_down, target_down, source_fpfh,
+def fast_global_registration_open3d(source_down, target_down, source_fpfh,
                                     target_fpfh, voxel_size):
     distance_threshold = voxel_size * 0.5
     print(":: Apply fast global registration with distance threshold %.3f"

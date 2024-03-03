@@ -1,13 +1,5 @@
-from notion_client.helpers import is_full_page
-import requests
-import os
 from notion_client import Client
-from pprint import pprint
-
 from .secret import NOTION_TOKEN
-from .slack import send_slack
-from .chatgpt import chatgpt
-
 import time
 
 
