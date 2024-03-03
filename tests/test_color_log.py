@@ -1,43 +1,11 @@
-import re
+import torch
 import numpy as np
-import lovely_tensors as lt
-import json
-from argparse import Namespace
-from lovely_numpy import lo
-from copy import copy, deepcopy
-from colorama import Fore, Back, Style
+from jhutil.logging_utils import color_log, disable_color_log, activate_color_log
+from jhutil.logging_utils import *
 
-lt.monkey_patch()
-
-disabled = False
-diiabled_alphabet = False
-
-
-def activate_jhprint():
-    global disabled, diiabled_alphabet
-    disabled = False
-    diiabled_alphabet = False
-
-
-def disable_jhprint(alphabet_only=False):
-    global disabled, diiabled_alphabet
-
-    if alphabet_only:
-        disabled = False
-        diiabled_alphabet = True
-    else:
-        disabled = True
-        diiabled_alphabet = False
-
-
-def jhprint(key, *datas, yaml=False, list_one_line=True, endline=' ', force=False):
+def jhprint_old(key, *datas, yaml=False, list_one_line=True, endline=' ', force=False):
     if force:
         pass
-    else:
-        if disabled:
-            return
-        if diiabled_alphabet and re.match(r'[a-z]', str(key)):
-            return
 
     colors = {
         1111: Back.RED + Fore.BLACK,
@@ -105,7 +73,28 @@ def jhprint(key, *datas, yaml=False, list_one_line=True, endline=' ', force=Fals
     if isinstance(key, int):
         if key == 0:
             key = "0000"
-        print(color + f"{key} {ret_str}" + Style.RESET_ALL)
+        output = color + f"{key} {ret_str}" + Style.RESET_ALL
     else:
-        print(Back.WHITE + key[0:2] + Style.RESET_ALL +
-              color + f"{key[2:]} {ret_str}" + Style.RESET_ALL)
+        output = Back.WHITE + key[0:2] + Style.RESET_ALL + \
+              color + f"{key[2:]} {ret_str}" + Style.RESET_ALL
+    
+    print(output)
+    return output
+
+def test_color_log():
+
+    tensor = torch.randn(100, 100)
+    tensor_list = [torch.randn(100, 100), torch.randn(100, 100), torch.randn(100, 100)]
+    array = np.random.randn(100, 100)
+    array_list = [np.random.randn(100, 100), np.random.randn(100, 100), np.random.randn(100, 100)]
+    
+    datas = [tensor, tensor_list, array, array_list]
+    
+    for data in datas:
+        ouptut1 = jhprint_old(1111, tensor)
+        ouptut2 = jhprint_old(2222, tensor, list_one_line=False)
+        ouptut3 = jhprint_old(3333, tensor, endline='\n ')
+        
+        assert(ouptut1 == color_log(1111, tensor))
+        assert(ouptut2 == color_log(2222, tensor, list_in_one_line=False))
+        assert(ouptut3 == color_log(3333, tensor, endline='\n '))
