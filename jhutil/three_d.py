@@ -26,116 +26,30 @@ def sample_point_cloud_from_mesh(mesh_file, num_points):
     return point_cloud
 
 
-def show_point_clouds(point_clouds, colors=None, normals=None, is_random_rotate=False, s=None, subsample_ratio=1.0, backend="matplotlib"):
-    if backend == "pythreejs":
-        n_pcd = len(point_clouds)
-        lens = [len(pcd) for pcd in point_clouds]
-        point_clouds = np.concatenate(point_clouds, axis=0)
-        
-        if colors is None:
-            palatte = PALATTE[:n_pcd]
-            colors = np.repeat(palatte, lens, axis=0)
-        
-        result = pd.DataFrame()
-        result["x"] = point_clouds[:, 0]
-        result["y"] = point_clouds[:, 1]
-        result["z"] = point_clouds[:, 2]
-
-        import jhutil; jhutil.jhprint(1111, colors.shape)
-        import jhutil; jhutil.jhprint(2222, point_clouds.shape)
-        assert colors.shape == point_clouds.shape
-        result["red"] = colors[:, 0]
-        result["green"] = colors[:, 1]
-        result["blue"] = colors[:, 2]
-        
-        PyntCloud(result).plot(return_scene=True, backend="pythreejs", initial_point_size=0.5)
-
-    elif backend == "matplotlib":
-        # use %matplotlib notebook
-        point_clouds = [pcd[::int(1.0 / subsample_ratio)] for pcd in point_clouds]
-        if s is None:
-            s = [0.3] * len(point_clouds)
-
-        for i, pcd in enumerate(point_clouds):
-            if isinstance(pcd, torch.Tensor):
-                point_clouds[i] = point_clouds[i].numpy()
-
-        pcds_concated = np.concatenate(point_clouds, axis=0)
-
-        mean = pcds_concated.mean(axis=0).tolist()
-        std = (pcds_concated - mean).std()
-        range = [[mean[0] - std * 2, mean[0] + std * 2],
-                 [mean[1] - std * 2, mean[1] + std * 2],
-                 [mean[2] - std * 2, mean[2] + std * 2]]
-
-        if colors is None:
-            def rgb_to_hex(rgb):
-                return "#{:02x}{:02x}{:02x}".format(rgb[0], rgb[1], rgb[2])
-            colors = PALATTE[:len(point_clouds)]
-            colors = [rgb_to_hex(color) for color in colors]
-
-        # Set up the figure and axis for the 3D plot
-        fig = plt.figure(figsize=(7, 7))
-        ax = fig.add_subplot(111, projection='3d')
-
-        if normals is None:
-            # Scatter plot for the 3D coordinates
-            for i, (points, color, s_) in enumerate(zip(point_clouds, colors, s)):
-                if is_random_rotate:
-                    points = _random_rotate(points)
-
-                ax.scatter(points[:, 0], points[:, 1],
-                           points[:, 2], '.', color=color, s=s_, label=i)
-
-        else:
-            # Scatter plot for the 3D coordinates
-            for points, normal, color, s_ in zip(point_clouds, normals, colors, s):
-                if is_random_rotate:
-                    points = _random_rotate(points)
-
-                ax.scatter(points[:, 0], points[:, 1],
-                           points[:, 2], '.', color=color, s=s_)
-                ax.quiver(points[:, 0], points[:, 1], points[:, 2], normal[:, 0], normal[:, 1],
-                          normal[:, 2], length=0.05, normalize=True, color=color, alpha=0.2)
-                location_mean = points.mean(axis=0)
-                normal_mean = normal.mean(axis=0)
-                ax.quiver(location_mean[0], location_mean[1], location_mean[2],
-                          normal_mean[0], normal_mean[1], normal_mean[2], length=0.5, color=color, alpha=1)
-
-        # Set labels for the axis
-        lg = plt.legend(loc="upper right")
-        for text, color in zip(lg.get_texts(), colors):
-            text.set_color(color)
-        ax.set_xlabel('X axis')
-        ax.set_ylabel('Y axis')
-        ax.set_zlabel('Z axis')
-
-        # Set the range for each axis
-        ax.set_xlim(range[0])
-        ax.set_ylim(range[1])
-        ax.set_zlim(range[2])
-
-        # Display the plot
-        plt.show()
-
-
-def show_pcd(pcd: torch.Tensor,
-             color: Union[torch.Tensor, None] = None,
-             normal: Union[torch.Tensor, None] = None,
-             point_size: float = 0.5):
-
+def show_point_clouds(point_clouds, colors=None):
+    n_pcd = len(point_clouds)
+    lens = [len(pcd) for pcd in point_clouds]
+    point_clouds = np.concatenate(point_clouds, axis=0)
+    
+    if colors is None:
+        palatte = PALATTE[:n_pcd]
+        colors = np.repeat(palatte, lens, axis=0)
+    
     result = pd.DataFrame()
-    result["x"] = pcd[:, 0]
-    result["y"] = pcd[:, 1]
-    result["z"] = pcd[:, 2]
+    result["x"] = point_clouds[:, 0]
+    result["y"] = point_clouds[:, 1]
+    result["z"] = point_clouds[:, 2]
 
-    if color is not None:
-        assert color.shape == pcd.shape
-        result["red"] = color[:, 0]
-        result["green"] = color[:, 1]
-        result["blue"] = color[:, 2]
-
-    PyntCloud(result).plot(return_scene=True, backend="pythreejs", initial_point_size=point_size)
+    # TODO: change it into log (debug)
+    import jhutil; jhutil.jhprint(1111, colors.shape)
+    import jhutil; jhutil.jhprint(2222, point_clouds.shape)
+    
+    assert colors.shape == point_clouds.shape
+    result["red"] = colors[:, 0]
+    result["green"] = colors[:, 1]
+    result["blue"] = colors[:, 2]
+    
+    PyntCloud(result).plot(return_scene=True, backend="pythreejs", initial_point_size=0.5)
 
 
 def _random_rotate(vertices):

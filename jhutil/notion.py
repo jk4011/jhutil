@@ -4,7 +4,7 @@ import os
 from notion_client import Client
 from pprint import pprint
 
-from .secret import NOTION_TOKEN, NOTION_DATABASE_ID_DIARY, NOTION_DATABASE_ID_SCRATCH
+from .secret import NOTION_TOKEN
 from .slack import send_slack
 from .chatgpt import chatgpt
 
