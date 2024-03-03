@@ -1,7 +1,8 @@
 import argparse
 import torch
 import time
-if __name__ == "__main__":
+
+def hold_gpus():
     # Instantiate the ArgumentParser object
     parser = argparse.ArgumentParser()
 
