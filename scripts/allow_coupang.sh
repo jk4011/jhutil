@@ -2,7 +2,6 @@
 set -e        # exit when error
 set -o xtrace # print command
 
-
 math_problem() {
     # two random number 
     a=$(($RANDOM % 987))
@@ -16,22 +15,22 @@ math_problem() {
     fi
 }
 
-allow_google() {
-    sudo sed -i '' '/google/d' /etc/hosts
+allow_coupang() {
+    sudo sed -i '' '/coupang/d' /etc/hosts
 }
 
-block_google() {
-    echo "127.0.0.1 google.com" | sudo tee -a  /etc/hosts
-    echo "127.0.0.1 www.google.com" | sudo tee -a  /etc/hosts
-    echo "127.0.0.1 *.google.com" | sudo tee -a  /etc/hosts
+block_coupang() {
+    echo "127.0.0.1 coupang.com" | sudo tee -a  /etc/hosts
+    echo "127.0.0.1 www.coupang.com" | sudo tee -a  /etc/hosts
+    echo "127.0.0.1 *.coupang.com" | sudo tee -a  /etc/hosts
     dscacheutil -flushcache
     exit 2
 }
 
-trap block_google SIGINT
+trap block_coupang SIGINT
 
 math_problem
-allow_google
+allow_coupang
 sleep 60
-block_google
+block_coupang
 
