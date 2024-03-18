@@ -27,9 +27,9 @@ block_coupang() {
     exit 2
 }
 
-trap block_coupang SIGINT
-
 math_problem
+
+trap block_coupang SIGINT
 allow_coupang
 sleep 60
 block_coupang

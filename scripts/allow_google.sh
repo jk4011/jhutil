@@ -28,9 +28,9 @@ block_google() {
     exit 2
 }
 
-trap block_google SIGINT
-
 math_problem
+
+trap block_google SIGINT
 allow_google
 sleep 60
 block_google
