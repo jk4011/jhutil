@@ -13,20 +13,21 @@ from pyntcloud import PyntCloud
 from .freq_utils import to_cpu
 
 
-PALATTE = np.array([[0, 204, 0], [204, 0, 0], [0, 0, 204], [127, 127, 0], [127, 0, 127], [0, 127, 127], [76, 153, 0], [153, 0, 76], [76, 0, 153], [153, 76, 0], [76, 0, 153], [
-    153, 0, 76], [204, 51, 127], [204, 51, 127], [51, 204, 127], [51, 127, 204], [127, 51, 204], [127, 204, 51], [76, 76, 178], [76, 178, 76], [178, 76, 76]])
+PALATTE = np.array([[204, 0, 0], [204, 204, 0], [0, 204, 0], [76, 76, 204], [127, 76, 127],
+                    [0, 127, 127], [76, 153, 0], [153, 0, 76], [76, 0, 153], [153, 76, 0], [76, 0, 153], [153, 0, 76], [204, 51, 127], [204, 51, 127], [51, 204, 127], [51, 127, 204], [127, 51, 204], [127, 204, 51], [76, 76, 178], [76, 178, 76], [178, 76, 76]])
+
 
 def show_point_clouds(point_clouds: List[torch.Tensor], colors=None):
     point_clouds = to_cpu(point_clouds)
-    
+
     n_pcd = len(point_clouds)
     lens = [len(pcd) for pcd in point_clouds]
     point_clouds = np.concatenate(point_clouds, axis=0)
-    
+
     if colors is None:
         palatte = PALATTE[:n_pcd]
         colors = np.repeat(palatte, lens, axis=0)
-    
+
     result = pd.DataFrame()
     result["x"] = point_clouds[:, 0]
     result["y"] = point_clouds[:, 1]
@@ -35,12 +36,12 @@ def show_point_clouds(point_clouds: List[torch.Tensor], colors=None):
     # TODO: change it into log (debug)
     import jhutil; jhutil.jhprint(1111, colors.shape)
     import jhutil; jhutil.jhprint(2222, point_clouds.shape)
-    
+
     assert colors.shape == point_clouds.shape
     result["red"] = colors[:, 0]
     result["green"] = colors[:, 1]
     result["blue"] = colors[:, 2]
-    
+
     PyntCloud(result).plot(return_scene=True, backend="pythreejs", initial_point_size=0.5)
 
 
@@ -83,4 +84,3 @@ def get_matrix_from_quat_trans(quaternion, translation):
 def transform_pcd_with_quat_trans(point_cloud, quaternion, translation):
     transform_matrix = get_matrix_from_quat_trans(quaternion, translation)
     return transform_pcd_with_matrix(point_cloud, transform_matrix)
-
