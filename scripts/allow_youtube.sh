@@ -16,22 +16,22 @@ math_problem() {
     fi
 }
 
-allow_google() {
-    sudo sed -i '' '/google/d' /etc/hosts
+allow_youtube() {
+    sudo sed -i '' '/youtube/d' /etc/hosts
 }
 
-block_google() {
-    echo "127.0.0.1 google.com" | sudo tee -a  /etc/hosts
-    echo "127.0.0.1 www.google.com" | sudo tee -a  /etc/hosts
-    echo "127.0.0.1 *.google.com" | sudo tee -a  /etc/hosts
+block_youtube() {
+    echo "127.0.0.1 youtube.com" | sudo tee -a  /etc/hosts
+    echo "127.0.0.1 www.youtube.com" | sudo tee -a  /etc/hosts
+    echo "127.0.0.1 *.youtube.com" | sudo tee -a  /etc/hosts
     dscacheutil -flushcache
     exit 2
 }
 
 math_problem
 
-trap block_google SIGINT
-allow_google
+trap block_youtube SIGINT
+allow_youtube
 sleep 60
-block_google
+block_youtube
 
