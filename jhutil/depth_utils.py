@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 
 
 def show_depth(depth):
@@ -109,3 +110,60 @@ def resize_sparse_depth(sparse_depth, h2=576, w2=768):
     new_depth[new_i, new_j] = nz_values
 
     return new_depth
+
+
+def get_depth_map(caminfo, pcd, H=None, W=None):
+    transformed_pcd = pcd @ caminfo.R + caminfo.T
+    X, Y, Z = transformed_pcd.T
+
+    if H is None or W is None:
+        H, W, _ = np.array(caminfo.image).shape
+
+    reg_X = (X / Z) / np.tan(caminfo.FovX / 2)
+    reg_Y = (Y / Z) / np.tan(caminfo.FovY / 2)
+    depths = Z
+
+    x_coors = reg_X * W / 2 + W / 2
+    y_coors = reg_Y * H / 2 + H / 2
+
+    depth_map = torch.zeros((H, W))
+
+    for x, y, depth in zip(x_coors, y_coors, depths):
+        if x < 0 or x >= W or y < 0 or y >= H:
+            continue
+        if depth_map[round(y), round(x)] == 0:
+            depth_map[round(y), round(x)] = depth
+        else:
+            depth_map[round(y), round(x)] = min(depth_map[round(y), round(x)], depth)
+
+    return depth_map
+
+
+def get_pcd(depth_map, R, T, fovX, fovY):
+
+    H, W = depth_map.shape
+    mask = depth_map != 0
+    yx_coors = torch.nonzero(mask)
+
+    x_coors = []
+    y_coors = []
+    depths = []
+    for (y, x), depth in zip(yx_coors, depth_map[mask]):
+        x_coors.append(x)
+        y_coors.append(y)
+        depths.append(depth)
+
+    x_coors = torch.tensor(x_coors)
+    y_coors = torch.tensor(y_coors)
+    Z = depths = torch.tensor(depths)
+
+    reg_X = x_coors / W * 2 - 1
+    reg_Y = y_coors / H * 2 - 1
+
+    X = reg_X * np.tan(fovX / 2) * Z
+    Y = reg_Y * np.tan(fovY / 2) * Z
+
+    transformed_pcd = torch.stack([X, Y, Z]).T
+    pcd = (transformed_pcd - T) @ R.T
+
+    return pcd
