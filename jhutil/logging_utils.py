@@ -53,14 +53,13 @@ def color_log(key, *datas, is_yaml=False, endline=' ', force=False, is_test=Fals
     elif isinstance(key, str):
         color = colors[key]
 
-
     ret_str = ""
     for data in datas:
         # make pretty
         try:
             if is_yaml:
                 data = is_yaml.dump(data, allow_unicode=True,
-                                 default_flow_style=False)
+                                    default_flow_style=False)
             else:  # json
                 data = json.dumps(
                     data, indent=4, ensure_ascii=False, default=convert_into_json)
@@ -68,18 +67,19 @@ def color_log(key, *datas, is_yaml=False, endline=' ', force=False, is_test=Fals
             pass
 
         ret_str = ret_str + endline + str(data)
-    
+
     if isinstance(key, int):
         if key == 0:
             key = "0000"
-        output = color + f"{key} {ret_str}" + Style.RESET_ALL
+        output = color + f" {key} {ret_str}" + Style.RESET_ALL
     else:
         output = Back.WHITE + key[0:2] + Style.RESET_ALL + \
-                    color + f"{key[2:]} {ret_str}" + Style.RESET_ALL
-    
+            color + f" {key[2:]} {ret_str}" + Style.RESET_ALL
+
     print(output)
     if is_test:
         return output
+
 
 def convert_into_json(value):
     value = deepcopy(value)
@@ -96,6 +96,7 @@ def convert_into_json(value):
         return lo(value)
     else:
         return str(value)
+
 
 # TODO: deprecate
 jhprint = color_log
