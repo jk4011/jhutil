@@ -2,7 +2,7 @@ import torch
 import jhutil
 
 
-def knn(src, dst, k=1, is_naive=False, is_sklearn=False):
+def knn(src, dst, k=1, is_naive=False, is_sklearn=False, device="cuda"):
     """return k nearest neighbors"""
 
     assert (len(src.shape) == 2)
@@ -50,8 +50,8 @@ def knn(src, dst, k=1, is_naive=False, is_sklearn=False):
         indices = torch.cat(indices, dim=1)
 
     tmp = distance.ravel()
-    distance = tmp.cpu()
-    indices = indices.ravel().cpu()
+    distance = tmp.to(device)
+    indices = indices.ravel().to(device)
 
     return distance, indices
 
@@ -60,5 +60,6 @@ if __name__ == "__main__":
     src = torch.rand(100000, 3)
     dst = torch.rand(100000, 3)
     distance, indices = knn(src, dst)
-    
-    import jhutil; jhutil.jhprint(1111, distance, indices, endline='\n')
+
+    import jhutil; jhutil.color_log(1111, distance)
+    import jhutil; jhutil.color_log(2222, indices)
