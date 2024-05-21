@@ -16,6 +16,7 @@ def to_cuda(x):
         x = x.cuda()
     return x
 
+
 def to_cpu(x):
     r"""Move all tensors to cpu."""
     if isinstance(x, list):
@@ -28,18 +29,22 @@ def to_cpu(x):
         x = x.cpu()
     return x
 
+
 def is_jupyter():
     import __main__ as main
     return not hasattr(main, '__file__')
 
+
 tmp = []
+
 
 def hold_gpus(gpu_idxs):
     global tmp
     for gpu in gpu_idxs:
         gpu = int(gpu)
         tmp.append(torch.randn(1000000000).cuda(gpu))
-    
+
+
 def release_gpus():
     global tmp
     tmp = []
