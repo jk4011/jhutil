@@ -4,8 +4,8 @@ set -o xtrace # print command
 
 math_problem() {
     # two random number 
-    a=$(($RANDOM % 987))
-    b=$(($RANDOM % 987))
+    a=$(($RANDOM % 187))
+    b=$(($RANDOM % 187))
     echo "$a x $b = ?"
     read answer
     if [ $answer -eq $(($a * $b)) ]; then
@@ -27,9 +27,9 @@ block_coupang() {
     exit 2
 }
 
-trap block_coupang SIGINT
-
 math_problem
+
+trap block_coupang SIGINT
 allow_coupang
 sleep 60
 block_coupang
