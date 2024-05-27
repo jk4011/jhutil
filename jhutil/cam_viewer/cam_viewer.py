@@ -3,6 +3,7 @@ import os
 import sys
 import argparse
 import numpy as np
+import torch
 
 from .src.visualizer import CameraVisualizer
 from .src.loader import load_quick, load_nerf, load_colmap
@@ -41,14 +42,25 @@ def get_example_datas(format="quick", root_path="inputs/quick/cam_c2w/", image_s
     return poses, legends, colors, images
 
 
-def visualize_camera(poses, legends=None, colors=["red", "yellow", "green", "blue", "purple"], images=None):
+def visualize_camera(poses, legends=None, colors=["red", "yellow", "green", "blue", "purple"], images=None, scene_size=5):
+    if images is not None:
+        image_sample = images[0]
+        if isinstance(image_sample, torch.Tensor):
+            images = [image.cpu().numpy() for image in images]
+        if image_sample.shape[0] == 4:
+            images = [image[:3] for image in images]
+        if image_sample.shape[0] in [3, 4]:
+            images = [image.transpose(1, 2, 0) for image in images]
+        if image_sample.max() <= 1:
+            images = [(image * 255).astype(np.uint8) for image in images]
+        
     if legends is None:
         legends = [""] * len(poses)
     if len(poses) > len(colors):
         colors = [colors[i % len(colors)] for i in range(len(poses))]
 
     viz = CameraVisualizer(poses, legends, colors, images=images)
-    fig = viz.update_figure(scene_bounds=5, base_radius=1, zoom_scale=1,
+    fig = viz.update_figure(scene_bounds=scene_size, base_radius=1, zoom_scale=1,
                             show_grid=True, show_ticklabels=True, show_background=True)
 
     fig.show()
