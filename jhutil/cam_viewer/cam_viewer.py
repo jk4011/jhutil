@@ -42,23 +42,35 @@ def get_example_datas(format="quick", root_path="inputs/quick/cam_c2w/", image_s
     return poses, legends, colors, images
 
 
-def visualize_camera(poses, legends=None, colors=["red", "yellow", "green", "blue", "purple"], images=None, scene_size=5):
-    if images is not None:
-        image_sample = images[0]
-        if isinstance(image_sample, torch.Tensor):
+def visualize_camera(poses, legends=None, colors=["red", "yellow", "green", "blue", "purple"], images=None, scene_size=5, show_indices=None):
+    n_camera = len(poses)
+    if show_indices is None:
+        show_indices = range(len(poses))
+    
+    if images is not None:        
+        if isinstance(images[0], torch.Tensor):
             images = [image.cpu().numpy() for image in images]
-        if image_sample.shape[0] == 4:
+            # redce resolution
+        if images[0].shape[0] == 4:
             images = [image[:3] for image in images]
-        if image_sample.shape[0] in [3, 4]:
+        if images[0].shape[0] == 3:
             images = [image.transpose(1, 2, 0) for image in images]
-        if image_sample.max() <= 1:
+        if images[0].max() <= 1:
             images = [(image * 255).astype(np.uint8) for image in images]
-        
+        if images[0].shape[0] > 128:
+            stride = images[0].shape[0] // 128
+            images = [image[::stride, ::stride] for image in images]
     if legends is None:
         legends = [""] * len(poses)
     if len(poses) > len(colors):
         colors = [colors[i % len(colors)] for i in range(len(poses))]
 
+    if images is not None:
+        images = [images[i] for i in range(n_camera) if i in show_indices]
+    poses = [poses[i] for i in range(n_camera) if i in show_indices]
+    colors = [colors[i] for i in range(n_camera) if i in show_indices]
+    legends = [legends[i] for i in range(n_camera) if i in show_indices]
+    
     viz = CameraVisualizer(poses, legends, colors, images=images)
     fig = viz.update_figure(scene_bounds=scene_size, base_radius=1, zoom_scale=1,
                             show_grid=True, show_ticklabels=True, show_background=True)
