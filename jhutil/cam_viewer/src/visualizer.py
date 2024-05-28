@@ -3,6 +3,7 @@ import os
 from PIL import Image
 import plotly.graph_objects as go
 import numpy as np
+import torch
 
 
 def calc_cam_cone_pts_3d(c2w, fov_deg, zoom = 1.0):
@@ -56,7 +57,7 @@ def calc_cam_cone_pts_3d(c2w, fov_deg, zoom = 1.0):
 
 class CameraVisualizer:
 
-    def __init__(self, poses, legends, colors, images=None, mesh_path=None, camera_x=1.0):
+    def __init__(self, poses, legends, colors, images=None, pcds=None, mesh_path=None, camera_x=1.0):
         self._fig = None
 
         self._camera_x = camera_x
@@ -64,6 +65,7 @@ class CameraVisualizer:
         self._poses = poses
         self._legends = legends
         self._colors = colors
+        self._pcds = pcds
 
         self._raw_images = None
         self._bit_images = None
@@ -172,6 +174,14 @@ class CameraVisualizer:
                     lighting_fresnel=1.0,
                     lighting_roughness=1.0,
                     lighting_specular=0.3))
+            
+            if self._pcds and self._pcds[i] is not None:
+                pcd = self._pcds[i]
+                if isinstance(pcd, torch.Tensor):
+                    pcd = pcd.cpu().numpy()
+                fig.add_trace(go.Scatter3d(
+                    x=pcd[:, 0], y=pcd[:, 1], z=pcd[:, 2], mode='markers',
+                    marker=dict(size=3, color=clr, opacity=0.8),))
             
             for (i, edge) in enumerate(edges):
                 (x1, x2) = (cone[edge[0], 0], cone[edge[1], 0])

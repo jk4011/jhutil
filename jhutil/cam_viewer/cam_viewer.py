@@ -13,7 +13,7 @@ from .src.utils import load_image
 def get_example_datas(format="quick", root_path="inputs/quick/cam_c2w/", image_size=256, no_images=False):
     current_file_path = os.path.abspath(__file__)
     root_path = os.path.join(os.path.dirname(current_file_path), root_path)
-    
+
     if format == 'quick':
         poses, legends, colors, image_paths = load_quick(root_path, "c2w")
     elif format == 'nerf':
@@ -42,12 +42,12 @@ def get_example_datas(format="quick", root_path="inputs/quick/cam_c2w/", image_s
     return poses, legends, colors, images
 
 
-def visualize_camera(poses, legends=None, colors=["red", "yellow", "green", "blue", "purple"], images=None, scene_size=5, show_indices=None):
+def visualize_camera(poses, legends=None, pcds=None, colors=["red", "yellow", "green", "blue", "purple"], images=None, scene_size=5, show_indices=None):
     n_camera = len(poses)
     if show_indices is None:
         show_indices = range(len(poses))
-    
-    if images is not None:        
+
+    if images is not None:
         if isinstance(images[0], torch.Tensor):
             images = [image.cpu().numpy() for image in images]
             # redce resolution
@@ -67,11 +67,13 @@ def visualize_camera(poses, legends=None, colors=["red", "yellow", "green", "blu
 
     if images is not None:
         images = [images[i] for i in range(n_camera) if i in show_indices]
+    if pcds is not None:
+        pcds = [pcds[i] for i in range(n_camera) if i in show_indices]
     poses = [poses[i] for i in range(n_camera) if i in show_indices]
     colors = [colors[i] for i in range(n_camera) if i in show_indices]
     legends = [legends[i] for i in range(n_camera) if i in show_indices]
-    
-    viz = CameraVisualizer(poses, legends, colors, images=images)
+
+    viz = CameraVisualizer(poses, legends, colors, images=images, pcds=pcds)
     fig = viz.update_figure(scene_bounds=scene_size, base_radius=1, zoom_scale=1,
                             show_grid=True, show_ticklabels=True, show_background=True)
 
