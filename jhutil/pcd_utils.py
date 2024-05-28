@@ -17,15 +17,20 @@ PALATTE = np.array([[204, 0, 0], [204, 204, 0], [0, 204, 0], [76, 76, 204], [127
                     [0, 127, 127], [76, 153, 0], [153, 0, 76], [76, 0, 153], [153, 76, 0], [76, 0, 153], [153, 0, 76], [204, 51, 127], [204, 51, 127], [51, 204, 127], [51, 127, 204], [127, 51, 204], [127, 204, 51], [76, 76, 178], [76, 178, 76], [178, 76, 76]])
 
 
-def show_point_clouds(point_clouds: List[torch.Tensor], colors=None):
+def show_point_clouds(point_clouds: List[torch.Tensor], colors=None, show_indices=None):
+    if show_indices is None:
+        show_indices = range(len(point_clouds))
     point_clouds = to_cpu(point_clouds)
 
+    # Filter the point clouds
     n_pcd = len(point_clouds)
+    point_clouds = [point_clouds[i] for i in range(n_pcd) if i in show_indices]
     lens = [len(pcd) for pcd in point_clouds]
+    
     point_clouds = np.concatenate(point_clouds, axis=0)
 
     if colors is None:
-        palatte = PALATTE[:n_pcd]
+        palatte = PALATTE[show_indices]
         colors = np.repeat(palatte, lens, axis=0)
 
     result = pd.DataFrame()
