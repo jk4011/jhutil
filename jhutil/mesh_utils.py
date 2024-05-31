@@ -89,7 +89,7 @@ def show_multiple_objs(obj_files, colors=None, is_random_rotate=False, library="
 
 
 def show_obj(obj_file, color=[1, 0, 0], library="go"):
-    vertices, faces = parse_obj_file(obj_file)
+    vertices, faces = read_obj_file(obj_file)
     if library == "meshplot":
         import meshplot as mp
         mp.plot(vertices, faces, c=color)
@@ -97,38 +97,30 @@ def show_obj(obj_file, color=[1, 0, 0], library="go"):
         x, y, z = vertices[:, 0], vertices[:, 1], vertices[:, 2]
         i, j, k = faces[:, 0], faces[:, 1], faces[:, 2]
 
-        mesh = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k)
-        layout = go.Layout(scene=dict(xaxis_title='X', yaxis_title='Y', zaxis_title='Z',
-                                      aspectmode='data',
-                                      aspectratio=dict(x=1, y=1, z=1)))
+        mesh = go.Mesh3d( 
+            x=x, y=y, z=z, i=i, j=j, k=k, 
+            opacity=0.5,
+        )
 
-        fig = go.Figure(data=[mesh], layout=layout)
+        fig = go.Figure(data=[mesh])
+        fig.update_layout(
+            scene=dict(
+                xaxis_title='X Axis',
+                yaxis_title='Y Axis',
+                zaxis_title='Z Axis'
+            ),
+            title='3D Mesh Visualization'
+        )
+
         fig.show()
 
 
-def parse_obj_file(filename):
-    positions = []
-    faces = []
-    with open(filename, 'r') as f:
-        for line in f:
-            if line.startswith('v '):
-                # Extract vertex position
-                parts = line.split()
-                position = [float(parts[1]), float(parts[2]), float(parts[3])]
-                positions.append(position)
-            elif line.startswith('f '):
-                # Extract face indices
-                parts = line.split()
-                # Subtract 1 because OBJ indices are 1-based
-                v1 = int(parts[1].split('/')[0]) - 1
-                v2 = int(parts[2].split('/')[0]) - 1
-                v3 = int(parts[3].split('/')[0]) - 1
-                faces.append([v1, v2, v3])
+def read_obj_file(file_path):
+    mesh = trimesh.load(file_path)
+    vertices = mesh.vertices
+    faces = mesh.faces
 
-    positions = np.array(positions, dtype=np.float32)
-    faces = np.array(faces, dtype=np.int32)
-
-    return positions, faces
+    return vertices, faces
 
 
 def show_meshes(folder_path, indices=None):
