@@ -68,7 +68,7 @@ def visualize_camera(poses, legends=None, pcds=None, colors=["red", "yellow", "g
     if images is not None:
         images = [images[i] for i in range(n_camera) if i in show_indices]
     if pcds is not None:
-        pcds = [pcds[i] for i in range(n_camera) if i in show_indices]
+        pcds = [pcd for i, pcd in enumerate(pcds) if i in show_indices]
     poses = [poses[i] for i in range(n_camera) if i in show_indices]
     colors = [colors[i] for i in range(n_camera) if i in show_indices]
     legends = [legends[i] for i in range(n_camera) if i in show_indices]
