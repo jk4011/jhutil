@@ -139,31 +139,47 @@ def get_depth_map(caminfo, pcd, H=None, W=None):
     return depth_map
 
 
-def get_pcd(depth_map, R, T, fovX, fovY):
+def inverse_3x4(campose):
+    campose = np.concatenate((campose, np.array([[0, 0, 0, 1]])), axis=0)
+    inverse_campose = np.linalg.inv(campose)
+    return inverse_campose[:3]
 
-    H, W = depth_map.shape
-    mask = depth_map != 0
-    yx_coors = torch.nonzero(mask)
 
-    x_coors = []
-    y_coors = []
-    depths = []
-    for (y, x), depth in zip(yx_coors, depth_map[mask]):
-        x_coors.append(x)
-        y_coors.append(y)
-        depths.append(depth)
+def get_pcd(depth_map, pose, fovX=1, fovY=1, is_w2c=True):
+    depth_map = torch.tensor(depth_map)
+    fovX = torch.tensor(fovX)
+    fovY = torch.tensor(fovY)
 
-    x_coors = torch.tensor(x_coors)
-    y_coors = torch.tensor(y_coors)
-    Z = depths = torch.tensor(depths)
+    # Get the depth map dimensions
+    height, width = depth_map.shape
 
-    reg_X = x_coors / W * 2 - 1
-    reg_Y = y_coors / H * 2 - 1
+    # Generate pixel coordinates
+    x = torch.linspace(0, width - 1, width)
+    y = torch.linspace(0, height - 1, height)
+    xv, yv = torch.meshgrid(x, y, indexing='xy')
 
-    X = reg_X * np.tan(fovX / 2) * Z
-    Y = reg_Y * np.tan(fovY / 2) * Z
+    # Reshape the pixel coordinates
+    xv = xv.reshape(-1)
+    yv = yv.reshape(-1)
 
-    transformed_pcd = torch.stack([X, Y, Z]).T
-    pcd = (transformed_pcd - T) @ R.T
+    # Convert pixel coordinates to normalized device coordinates (NDC)
+    x_ndc = (xv / (width - 1)) * 2 - 1
+    y_ndc = (yv / (height - 1)) * 2 - 1
+
+    # Convert NDC to camera coordinates
+    x_cam = x_ndc * torch.tan(fovX / 2)
+    y_cam = y_ndc * torch.tan(fovY / 2)
+    Z = depth_map.reshape(-1)
+    X = x_cam * Z
+    Y = y_cam * Z
+
+    # Stack camera coordinates
+    cam_coords = torch.stack((X, -Y, -Z, torch.ones(len(X))), dim=1)
+    cam_coords = cam_coords[Z != 0]
+
+    if is_w2c:
+        pcd = cam_coords @ pose.T
+    else:
+        pcd = cam_coords @ inverse_3x4(pose).T
 
     return pcd

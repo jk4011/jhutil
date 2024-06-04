@@ -1,7 +1,12 @@
 import torch
 import argparse
-import torch
 import time
+from PIL import Image
+from torchvision.transforms import ToTensor
+
+
+def load_img(path):
+    return ToTensor()(Image.open(path))
 
 
 def to_cuda(x):
