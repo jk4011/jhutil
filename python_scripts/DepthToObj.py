@@ -10,25 +10,25 @@ from jhutil import inverse_3x4
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--depthPath', dest='depthPath',
+    parser.add_argument('--depth_path', dest='depth_path',
                         help='depth map path',
                         default='objaverse-rendering/example/example_obj/000_depth.npy', type=str)
-    parser.add_argument('--depthInvert', dest='depthInvert',
+    parser.add_argument('--depth_invert', dest='depth_invert',
                         help='Invert depth map',
                         default=False, action='store_true')
-    parser.add_argument('--texturePath', dest='texturePath',
+    parser.add_argument('--rgb_path', dest='rgb_path',
                         help='corresponding image path',
                         default='objaverse-rendering/example/example_obj/000.png', type=str)
-    parser.add_argument('--objPath', dest='objPath',
+    parser.add_argument('--obj_path', dest='obj_path',
                         help='output path of .obj file',
                         default='model.obj', type=str)
-    parser.add_argument('--mtlPath', dest='mtlPath',
+    parser.add_argument('--mtl_path', dest='mtl_path',
                         help='output path of .mtl file',
                         default='model.mtl', type=str)
-    parser.add_argument('--matName', dest='matName',
+    parser.add_argument('--mat_name', dest='mat_name',
                         help='name of material to create',
                         default='colored', type=str)
-    parser.add_argument('--extrinsicPath', dest='extrinsicPath',
+    parser.add_argument('--extrinsic_path', dest='extrinsic_path',
                         help='path to extrinsic matrix',
                         default='objaverse-rendering/example/example_obj/000.npy', type=str)
     parser.add_argument('--fov', dest='fov',
@@ -38,11 +38,11 @@ def parse_args():
     return args
 
 
-def create_mtl(mtlPath, matName, texturePath):
-    if max(mtlPath.find('\\'), mtlPath.find('/')) > -1:
-        os.makedirs(os.path.dirname(mtlPath), exist_ok=True)
-    with open(mtlPath, "w") as f:
-        f.write("newmtl " + matName + "\n")
+def create_mtl(mtl_path, mat_name, rgb_path):
+    if max(mtl_path.find('\\'), mtl_path.find('/')) > -1:
+        os.makedirs(os.path.dirname(mtl_path), exist_ok=True)
+    with open(mtl_path, "w") as f:
+        f.write("newmtl " + mat_name + "\n")
         f.write("Ns 10.0000\n")
         f.write("d 1.0000\n")
         f.write("Tr 0.0000\n")
@@ -50,30 +50,30 @@ def create_mtl(mtlPath, matName, texturePath):
         f.write("Ka 1.000 1.000 1.000\n")
         f.write("Kd 1.000 1.000 1.000\n")
         f.write("Ks 0.000 0.000 0.000\n")
-        f.write("map_Ka " + texturePath + "\n")
-        f.write("map_Kd " + texturePath + "\n")
+        f.write("map_Ka " + rgb_path + "\n")
+        f.write("map_Kd " + rgb_path + "\n")
 
 
 def vete(v, vt):
     return str(v) + "/" + str(vt)
 
 
-def create_obj(depthPath, depthInvert, objPath, mtlPath, matName, extrinsicPath, useMaterial, fov):
+def create_obj(depth_path, depth_invert, obj_path, mtl_path, mat_name, extrinsic_path, useMaterial, fov):
 
-    c2w = np.load(extrinsicPath)
+    c2w = np.load(extrinsic_path)
     w2c = inverse_3x4(c2w)
     
     
-    if depthPath.endswith(".npy") or depthPath.endswith(".npz"):
-        depth = np.load(depthPath).astype(np.float32)
+    if depth_path.endswith(".npy") or depth_path.endswith(".npz"):
+        depth = np.load(depth_path).astype(np.float32)
     else:
-        depth = cv2.imread(depthPath, -1).astype(np.float32) / 1000.0
+        depth = cv2.imread(depth_path, -1).astype(np.float32) / 1000.0
 
     if len(depth.shape) > 2 and depth.shape[2] > 1:
-        print('Expecting a 1D map, but depth map at path %s has shape %r' % (depthPath, depth.shape))
+        print('Expecting a 1D map, but depth map at path %s has shape %r' % (depth_path, depth.shape))
         return
 
-    if depthInvert:
+    if depth_invert:
         depth = 1.0 - depth
 
     w = depth.shape[1]
@@ -81,13 +81,13 @@ def create_obj(depthPath, depthInvert, objPath, mtlPath, matName, extrinsicPath,
 
     D = (depth.shape[0] / 2) / math.tan(fov / 2)
 
-    if max(objPath.find('\\'), objPath.find('/')) > -1:
-        os.makedirs(os.path.dirname(mtlPath), exist_ok=True)
+    if max(obj_path.find('\\'), obj_path.find('/')) > -1:
+        os.makedirs(os.path.dirname(mtl_path), exist_ok=True)
 
-    with open(objPath, "w") as f:
+    with open(obj_path, "w") as f:
         if useMaterial:
-            f.write("mtllib " + mtlPath + "\n")
-            f.write("usemtl " + matName + "\n")
+            f.write("mtllib " + mtl_path + "\n")
+            f.write("usemtl " + mat_name + "\n")
 
         ids = np.zeros((depth.shape[1], depth.shape[0]), int)
         vertex_location = np.ones((depth.shape[1] * depth.shape[0] + 2, 3)) * -1
@@ -164,15 +164,16 @@ def create_obj(depthPath, depthInvert, objPath, mtlPath, matName, extrinsicPath,
 if __name__ == "__main__":
     print("STARTED")
     args = parse_args()
-    useMat = args.texturePath != ''
-    if useMat:
-        create_mtl(args.mtlPath, args.matName, args.texturePath)
-    create_obj(args.depthPath,
-               args.depthInvert,
-               args.objPath,
-               args.mtlPath,
-               args.matName,
-               args.extrinsicPath,
-               useMat,
+    use_mat = args.rgb_path != ''
+    if use_mat:
+        create_mtl(args.mtl_path, args.mat_name, args.rgb_path)
+    
+    create_obj(args.depth_path,
+               args.depth_invert,
+               args.obj_path,
+               args.mtl_path,
+               args.mat_name,
+               args.extrinsic_path,
+               use_mat,
                args.fov)
     print("FINISHED")
