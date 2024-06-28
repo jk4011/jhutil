@@ -11,7 +11,7 @@ lt.monkey_patch()
 _disabled = False
 
 
-def activate_color_log():
+def enable_color_log():
     global _disabled
     _disabled = False
 
@@ -21,11 +21,11 @@ def disable_color_log():
     _disabled = True
 
 
-def color_log(key, *datas, is_yaml=False, endline=' ', force=False, is_test=False):
+def color_log(key, *datas, is_yaml=False, endline=' ', force=False, return_str=False):
     if force:
         pass
     elif _disabled:
-        return None
+        return
 
     colors = {
         1111: Back.RED + Fore.BLACK,
@@ -55,7 +55,6 @@ def color_log(key, *datas, is_yaml=False, endline=' ', force=False, is_test=Fals
 
     ret_str = ""
     for data in datas:
-        # make pretty
         try:
             if is_yaml:
                 data = is_yaml.dump(data, allow_unicode=True,
@@ -73,11 +72,11 @@ def color_log(key, *datas, is_yaml=False, endline=' ', force=False, is_test=Fals
             key = "0000"
         output = color + f" {key} {ret_str}" + Style.RESET_ALL
     else:
-        output = Back.WHITE + key[0:2] + Style.RESET_ALL + \
-            color + f" {key[2:]} {ret_str}" + Style.RESET_ALL
+        output = Back.WHITE + Fore.BLACK + " " + key[0:2] + Style.RESET_ALL + \
+            color + f"{key[2:]} {ret_str}" + Style.RESET_ALL
 
     print(output)
-    if is_test:
+    if return_str:
         return output
 
 
@@ -97,8 +96,3 @@ def convert_into_json(value):
     else:
         return str(value)
 
-
-# TODO: deprecate
-jhprint = color_log
-activate_jhprint = activate_color_log
-disable_jhprint = disable_color_log
