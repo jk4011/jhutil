@@ -38,10 +38,6 @@ def show_point_clouds(point_clouds: List[torch.Tensor], colors=None, show_indice
     result["y"] = point_clouds[:, 1]
     result["z"] = point_clouds[:, 2]
 
-    # TODO: change it into log (debug)
-    import jhutil; jhutil.jhprint(1111, colors.shape)
-    import jhutil; jhutil.jhprint(2222, point_clouds.shape)
-
     assert colors.shape == point_clouds.shape
     result["red"] = colors[:, 0]
     result["green"] = colors[:, 1]
