@@ -32,6 +32,8 @@ def show_point_clouds(point_clouds: List[torch.Tensor], colors=None, show_indice
     if colors is None:
         palatte = PALATTE[show_indices]
         colors = np.repeat(palatte, lens, axis=0)
+    else:
+        colors = np.concatenate(colors, axis=0)
 
     result = pd.DataFrame()
     result["x"] = point_clouds[:, 0]
