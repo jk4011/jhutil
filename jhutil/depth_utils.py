@@ -1,7 +1,59 @@
 import torch
 import numpy as np
+from .pcd_utils import show_point_clouds
 
 
+def depth_to_points(depth_tensor, fov=60):
+    """
+    Convert depth map to 3D points.
+
+    Parameters:
+    depth_tensor (torch.Tensor): Depth map of shape (H, W)
+    fov (float): Field of view in degrees
+    image_width (int): Width of the image
+    image_height (int): Height of the image
+
+    Returns:
+    torch.Tensor: 3D points of shape (H, W, 3) where each point has (X, Y, Z) coordinates
+    """
+    
+    image_height, image_width = depth_tensor.shape
+    
+    # Compute focal length from the field of view
+    focal_length = (image_width / 2) / torch.tan(torch.tensor(fov / 2 * (torch.pi / 180)))
+
+    # Create a meshgrid for pixel coordinates
+    i, j = torch.meshgrid(torch.arange(image_height), torch.arange(image_width), indexing='ij')
+
+    # Normalize pixel coordinates
+    i_normalized = (i - image_height / 2) / focal_length
+    j_normalized = (j - image_width / 2) / focal_length
+
+    # Compute 3D coordinates (X, Y, Z)
+    Z = depth_tensor
+    X = j_normalized * Z
+    Y = i_normalized * Z
+
+    # Stack to get (H, W, 3) tensor for 3D points
+    points_3d = torch.stack([X, Y, Z], dim=-1)
+
+    # convert into (H*W, 3)
+    points_3d = points_3d.view(-1, 3)
+    
+    return points_3d
+
+
+def show_depth_3d(depth, rgb, fov=60, subsample=10):
+    # n, 3
+    points = depth_to_points(depth, fov=fov)
+    
+    # n, 3
+    rgb = rgb.permute(1, 2, 0)
+    rgb = rgb.view(-1, 3)
+    
+    show_point_clouds([points[::subsample]], colors=[rgb[::subsample] * 255])
+    
+    
 def show_depth(depth):
     depth = depth.squeeze()
     return get_scale_depth(depth).chans
