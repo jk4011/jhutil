@@ -42,7 +42,7 @@ def get_example_datas(format="quick", root_path="inputs/quick/cam_c2w/", image_s
     return poses, legends, colors, images
 
 
-def visualize_camera(poses, legends=None, pcds=None, colors=["red", "yellow", "green", "blue", "purple"], images=None, scene_size=5, show_indices=None):
+def visualize_camera(poses, legends=None, pcds=[], colors=["red", "yellow", "green", "blue", "purple"], images=None, scene_size=5, show_indices=None):
     n_camera = len(poses)
     if show_indices is None:
         show_indices = range(len(poses))
