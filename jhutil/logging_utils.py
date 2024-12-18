@@ -5,27 +5,29 @@ from argparse import Namespace
 from lovely_numpy import lo
 from copy import deepcopy
 from colorama import Fore, Back, Style
+import traceback
 
 lt.monkey_patch()
+location_history = {}
 
-_disabled = False
-
-
-def enable_color_log():
-    global _disabled
-    _disabled = False
-
-
-def disable_color_log():
-    global _disabled
-    _disabled = True
+def color_log(key, *datas, is_yaml=False, endline=' ', return_str=False, skip_duplicate=False):
     
+    if _traceback_enabled:
+        stack = traceback.extract_stack()
+        filename, lineno, funcname, code = stack[-2]
+        print(f"Called from file: {filename}, line {lineno}")
+        
+    if skip_duplicate:
+        stack = traceback.extract_stack()
+        filename, lineno, funcname, code = stack[-2]
+        location = f"{filename}:{lineno}"
+        
+        if location in location_history:
+            return
+        else:
+            location_history[location] = True
 
-def color_log(key, *datas, is_yaml=False, endline=' ', force=False, return_str=False, enable_duplicates=False):
-    if force:
-        pass
-    elif _disabled:
-        return
+    
     colors = {
         1111: Back.RED + Fore.BLACK,
         2222: Back.YELLOW + Fore.BLACK,
@@ -47,6 +49,7 @@ def color_log(key, *datas, is_yaml=False, endline=' ', force=False, return_str=F
         "hhhh": Fore.GREEN,
         "iiii": Fore.CYAN,
     }
+    key_type = type(key)
     if isinstance(key, int):
         color = colors[key // 1000 * 1111]
     elif isinstance(key, str):
@@ -75,6 +78,8 @@ def color_log(key, *datas, is_yaml=False, endline=' ', force=False, return_str=F
             key = "0000"
         output = color + f" {key} {ret_str}" + Style.RESET_ALL
 
+    if key_type == str:
+        output = "  " + output
     print(output)
     if return_str:
         return output
@@ -95,3 +100,14 @@ def convert_into_json(value):
         return lo(value)
     else:
         return str(value)
+
+
+_traceback_enabled = False
+
+def enable_traceback():
+    global _traceback_enabled
+    _traceback_enabled = True
+
+def disable_traceback():
+    global _traceback_enabled
+    _traceback_enabled = False
