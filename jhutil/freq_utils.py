@@ -5,8 +5,11 @@ from PIL import Image
 from torchvision.transforms import ToTensor
 
 
-def load_img(path):
-    return ToTensor()(Image.open(path))
+def load_img(path, downsample=1):
+    img = ToTensor()(Image.open(path))
+    if downsample > 1:
+        img = img[:, ::downsample, ::downsample]
+    return img
 
 
 def to_cuda(x):

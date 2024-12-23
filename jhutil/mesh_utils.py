@@ -10,7 +10,7 @@ import jhutil
 import pandas as pd
 from typing import Union
 from pyntcloud import PyntCloud
-from .pcd_utils import transform_pcd_with_matrix
+from .pcd_utils import transform_pcd_with_matrix, PALATTE
 
 def _random_rotate(vertex):
     theta_x = random.uniform(0, math.pi * 2)
@@ -39,17 +39,17 @@ def show_multiple_objs(obj_files, colors=None, is_random_rotate=False, library="
     if transformations is not None:
         assert len(obj_files) == len(transformations)
     else:
-        transformations = [torch.eye(4)] * len(obj_files)
+        transformations = [torch.eye(4, dtype=torch.float32)] * len(obj_files)
 
     if library == "meshplot":
         import meshplot as mp
-        v, f = parse_obj_file(obj_files[0])
+        v, f = read_obj_file(obj_files[0])
         p = mp.plot(v, f)
 
         for i, obj_file in enumerate(obj_files):
             if i == 0:
                 continue
-            vertices, faces = parse_obj_file(obj_file)
+            vertices, faces = read_obj_file(obj_file)
             vertices *= scale
             if is_random_rotate:
                 vertices = _random_rotate(vertices)
@@ -60,7 +60,7 @@ def show_multiple_objs(obj_files, colors=None, is_random_rotate=False, library="
         meshes = []
 
         for idx, obj_file in enumerate(obj_files):
-            vertices, faces = parse_obj_file(obj_file)
+            vertices, faces = read_obj_file(obj_file)
             vertices *= scale
             vertices = transform_pcd_with_matrix(torch.tensor(vertices), transformations[idx])
             x, y, z = vertices[:, 0], vertices[:, 1], vertices[:, 2]

@@ -65,7 +65,7 @@ def transform_pcd_with_matrix(point_cloud, transform_matrix):
     point_cloud_h = torch.cat((point_cloud, ones), dim=1).t()
 
     # Perform the transformation
-    transformed_point_cloud_h = torch.matmul(transform_matrix, point_cloud_h)
+    transformed_point_cloud_h = torch.matmul(transform_matrix.float(), point_cloud_h.float())
 
     # Convert back to 3D coordinates
     transformed_point_cloud = transformed_point_cloud_h[:3, :].t()
