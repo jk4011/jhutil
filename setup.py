@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="jhutil",
-    version="0.1.8",
+    version="0.1.9",
     description="jhutil",
     long_description_content_type="text/markdown",
     url="https://github.com/jk4011/jhutil",
@@ -26,6 +26,7 @@ setup(
         "pythreejs",
         "einops",
         "pyntcloud",
+        "Pillow==9.5.0",
     ],
     packages=["jhutil"],
     python_requires=">=3.6, <4",
