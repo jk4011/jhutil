@@ -2,7 +2,7 @@ import torch
 import jhutil
 
 
-def knn(src, dst, k=1, is_naive=False, is_sklearn=False, device="cuda"):
+def knn(src, dst, k=1, is_naive=False, is_sklearn=False, device="cuda", chunk_size=1e5):
     """return k nearest neighbors"""
 
     assert (len(src.shape) == 2)
@@ -37,8 +37,7 @@ def knn(src, dst, k=1, is_naive=False, is_sklearn=False, device="cuda"):
         dst = dst.cuda().contiguous()
 
         from knn_cuda import KNN
-        knn = KNN(k=1, transpose_mode=True)
-        chunk_size = 1e9
+        knn = KNN(k=k, transpose_mode=True)
         src_chunks = torch.chunk(src, int(src.shape[0] * dst.shape[0] // chunk_size) + 1, 0)
         distance = []
         indices = []
@@ -49,9 +48,8 @@ def knn(src, dst, k=1, is_naive=False, is_sklearn=False, device="cuda"):
         distance = torch.cat(distance, dim=1)
         indices = torch.cat(indices, dim=1)
 
-    tmp = distance.ravel()
-    distance = tmp.to(device)
-    indices = indices.ravel().to(device)
+    distance = distance.squeeze(0).to(device)
+    indices = indices.squeeze(0).to(device)
 
     return distance, indices
 

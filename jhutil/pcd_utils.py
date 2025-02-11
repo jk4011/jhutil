@@ -13,7 +13,7 @@ from pyntcloud import PyntCloud
 from .freq_utils import to_cpu
 
 
-PALATTE = np.array([[204, 0, 0], [204, 204, 0], [0, 204, 0], [76, 76, 204], [127, 76, 127],
+PALATTE = np.array([[0, 204, 0], [204, 0, 0], [204, 204, 0], [76, 76, 204], [127, 76, 127],
                     [0, 127, 127], [76, 153, 0], [153, 0, 76], [76, 0, 153], [153, 76, 0], [76, 0, 153], [153, 0, 76], [204, 51, 127], [204, 51, 127], [51, 204, 127], [51, 127, 204], [127, 51, 204], [127, 204, 51], [76, 76, 178], [76, 178, 76], [178, 76, 76]])
 
 
@@ -45,7 +45,7 @@ def show_point_clouds(point_clouds: List[torch.Tensor], colors=None, show_indice
     result["green"] = colors[:, 1]
     result["blue"] = colors[:, 2]
 
-    PyntCloud(result).plot(return_scene=True, backend="pythreejs", initial_point_size=0.5)
+    PyntCloud(result).plot(return_scene=True, backend="pythreejs", initial_point_size=0.01)
 
 
 def sample_point_cloud_from_mesh(mesh_file, num_points):

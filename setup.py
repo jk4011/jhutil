@@ -26,7 +26,7 @@ setup(
         "pythreejs",
         "einops",
         "pyntcloud",
-        "Pillow==9.5.0",
+        "Pillow==9.5.0", # for visualization code
     ],
     packages=["jhutil"],
     python_requires=">=3.6, <4",
