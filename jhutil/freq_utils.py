@@ -130,25 +130,47 @@ def release_gpus():
     torch.cuda.empty_cache()
 
 
-def cache_model_output(func):
-    def wrapper(*args, **kwargs):
-        hash_sum = 0
-        for arg in args:
-            if isinstance(arg, torch.Tensor):
-                arg = np.array(arg.cpu())
-            if isinstance(arg, np.ndarray):
-                hash_int = int(hashlib.md5(arg.tobytes()).hexdigest(), 16)
-            else:
-                hash_int = hash(arg)
-            hash_sum += hash_int
+# wrapper function
+def cache_output(func_name=""):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            hash_sum = 0
+            for arg in args:
+                if isinstance(arg, torch.Tensor):
+                    arg = np.array(arg.cpu())
+                if isinstance(arg, np.ndarray):
+                    hash_int = int(hashlib.md5(arg.tobytes()).hexdigest(), 16)
+                else:
+                    hash_int = int(hashlib.md5(str(arg).encode()).hexdigest(), 16)
+                hash_sum += hash_int
+                
+            if func_name != "":
+                hash_sum += int(hashlib.md5(str(func_name).encode()).hexdigest(), 16)
 
-        if not os.path.exists(".cache"):
-            os.mkdir(".cache")
-        cache_path = f".cache/{hash_sum}.pt"
-        if os.path.exists(cache_path):
-            return torch.load(cache_path)
-        else:
-            result = func(*args, **kwargs)
-            torch.save(result, cache_path)
-            return result
-    return wrapper
+            if not os.path.exists(".cache"):
+                os.mkdir(".cache")
+            cache_path = f".cache/{hash_sum}.pt"
+            if os.path.exists(cache_path):
+                from jhutil import color_log; color_log("cccc", f"load cached output, skipping {func_name}")
+                return torch.load(cache_path)
+            else:
+                from jhutil import color_log; color_log("aaaa", f"no cached output, executing {func_name}")
+                result = func(*args, **kwargs)
+                torch.save(result, cache_path)
+                return result
+        return wrapper
+    return decorator
+
+
+
+def get_img_diff(img1, img2):
+    diff_img = torch.zeros_like(img1).cuda()
+    
+    diff_max = (img1 - img2).max(dim=0).values
+    diff_min = (img1 - img2).min(dim=0).values
+    
+    diff_img[0][diff_max > 0] = diff_max[diff_max > 0]
+    diff_img[2][diff_min < 0] = - diff_min[diff_min < 0]
+    
+    diff_img_concat = torch.concat([img1, diff_img, img2], dim=2)
+    return diff_img_concat

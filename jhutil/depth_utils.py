@@ -49,7 +49,7 @@ def show_depth_3d(depth, rgb, fov=60, subsample=10):
     
     # n, 3
     rgb = rgb.permute(1, 2, 0)
-    rgb = rgb.view(-1, 3)
+    rgb = rgb.reshape(-1, 3)
     
     show_point_clouds([points[::subsample]], colors=[rgb[::subsample] * 255])
     

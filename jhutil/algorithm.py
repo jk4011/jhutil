@@ -1,7 +1,9 @@
 import torch
 import jhutil
+from jhutil import cache_output
 
 
+@cache_output(func_name="knn")
 def knn(src, dst, k=1, is_naive=False, is_sklearn=False, device="cuda", chunk_size=1e5):
     """return k nearest neighbors"""
 
@@ -40,7 +42,7 @@ def knn(src, dst, k=1, is_naive=False, is_sklearn=False, device="cuda", chunk_si
         knn = KNN(k=k, transpose_mode=True)
         src_chunks = torch.chunk(src, int(src.shape[0] * dst.shape[0] // chunk_size) + 1, 0)
         distance = []
-        indices = []
+        indices = []    
         for src_chunk in src_chunks:
             dist_chunk, indices_chunk = knn(dst[None, :], src_chunk[None, :])
             distance.append(dist_chunk)

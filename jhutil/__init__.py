@@ -7,3 +7,4 @@ from .freq_utils import *
 from .mesh_utils import *
 from .visualize import *
 # from .open3d_utils import *
+from .img_utils import *

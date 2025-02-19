@@ -35,7 +35,7 @@ def show_images(img_paths):
 
 
 def show_matching(
-    img0, img1, mkpts0=torch.empty(0, 2), mkpts1=torch.empty(0, 2), color=None, kpts0=None, kpts1=None, dpi=75, bbox=None
+    img0, img1, mkpts0=torch.empty(0, 2), mkpts1=torch.empty(0, 2), color=None, kpts0=None, kpts1=None, dpi=75, bbox=None, skip_line=False, linewidth=1
 ):
     if img0.shape[0] in [3, 4]:
         img0 = img0.permute(1, 2, 0)
@@ -46,10 +46,14 @@ def show_matching(
     if isinstance(mkpts0, torch.Tensor):
         mkpts0 = mkpts0.cpu().numpy()
         mkpts1 = mkpts1.cpu().numpy()
+    mkpts0 = mkpts0.copy()
+    mkpts1 = mkpts1.copy()    
+    
     if color is None:
         generator = torch.Generator()  # for fixing seed
         color = plt.cm.jet(torch.rand(mkpts0.shape[0], generator=generator))
 
+    
     if bbox is not None:
         w_from, h_from, w_to, h_to = bbox
         img0 = img0[h_from:h_to, w_from:w_to]
@@ -77,22 +81,22 @@ def show_matching(
         axes[0].scatter(kpts0[:, 0], kpts0[:, 1], c="w", s=2)
         axes[1].scatter(kpts1[:, 0], kpts1[:, 1], c="w", s=2)
 
-    # draw matches
     if mkpts0.shape[0] != 0 and mkpts1.shape[0] != 0:
         fig.canvas.draw()
         transFigure = fig.transFigure.inverted()
         fkpts0 = transFigure.transform(axes[0].transData.transform(mkpts0))
         fkpts1 = transFigure.transform(axes[1].transData.transform(mkpts1))
-        fig.lines = [
-            matplotlib.lines.Line2D(
-                (fkpts0[i, 0], fkpts1[i, 0]),
-                (fkpts0[i, 1], fkpts1[i, 1]),
-                transform=fig.transFigure,
-                c=color[i],
-                linewidth=1,
-            )
-            for i in range(len(mkpts0))
-        ]
+        if not skip_line:
+            fig.lines = [
+                matplotlib.lines.Line2D(
+                    (fkpts0[i, 0], fkpts1[i, 0]),
+                    (fkpts0[i, 1], fkpts1[i, 1]),
+                    transform=fig.transFigure,
+                    c=color[i],
+                    linewidth=linewidth,
+                )
+                for i in range(len(mkpts0))
+            ]
 
         axes[0].scatter(mkpts0[:, 0], mkpts0[:, 1], c=color, s=4)
         axes[1].scatter(mkpts1[:, 0], mkpts1[:, 1], c=color, s=4)
