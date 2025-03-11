@@ -57,7 +57,7 @@ def crop_two_image_with_alpha(img1: torch.Tensor, img2: torch.Tensor):
 
 def crop_image_with_alpha(img: torch.Tensor):
     assert img.dim() == 3
-        
+
     alpha = img[3]
     bbox = get_bbox(alpha)
     cropped_image = img[:, bbox[1] : bbox[3], bbox[0] : bbox[2]]
@@ -100,3 +100,18 @@ def crop_image_with_background(img: torch.Tensor, background="black"):
         alpha = 1 - (img == 1).all(dim=0).int()
     bbox = get_bbox(alpha)
     return img[:, bbox[1] : bbox[3], bbox[0] : bbox[2]]
+
+
+def show_xy(xy):
+    assert xy.shape[1] == 2
+    assert xy.dim() == 2
+
+    xy_long = xy.long()
+    w = torch.max(xy_long[:, 0]).item() + 1
+    h = torch.max(xy_long[:, 1]).item() + 1
+
+    plane = torch.zeros((h, w), dtype=torch.float32)
+    coord = [xy_long[:, 1], xy_long[:, 0]]
+    plane[coord] = True
+
+    return plane.chans
