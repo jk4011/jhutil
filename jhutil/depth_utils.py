@@ -3,7 +3,42 @@ import numpy as np
 from .pcd_utils import show_point_clouds
 
 
-def depth_to_points(depth_tensor, fov=60):
+def depth_to_point(depth: torch.Tensor, K: torch.Tensor, Rt: torch.Tensor = None, mask: torch.Tensor = None):
+    H, W = depth.shape
+    device = depth.device
+
+    y, x = torch.meshgrid(
+        torch.arange(H, device=device, dtype=torch.float32),
+        torch.arange(W, device=device, dtype=torch.float32),
+        indexing='ij'
+    )
+
+    if mask is not None:
+        valid_indices = mask.nonzero(as_tuple=True)
+        x, y = x[valid_indices], y[valid_indices]
+        depth = depth[valid_indices]
+    else:
+        x, y = x.flatten(), y.flatten()
+        depth = depth.flatten()
+
+    ones = torch.ones_like(x)
+    pixel_coords = torch.stack((x, y, ones), dim=0)
+
+    K_inv = torch.inverse(K)
+    cam_coords = K_inv @ pixel_coords
+    cam_coords *= depth
+    cam_coords = torch.cat([cam_coords, ones.unsqueeze(0)], dim=0)
+
+    if Rt is not None:
+        Rt_inv = torch.inverse(Rt)
+        world_coords = Rt_inv @ cam_coords
+        world_coords = world_coords[:3]
+        return world_coords.T
+
+    return cam_coords[:3].T
+
+
+def depth_to_points_simple(depth_tensor, fov=60):
     """
     Convert depth map to 3D points.
 
@@ -45,7 +80,7 @@ def depth_to_points(depth_tensor, fov=60):
 
 def show_depth_3d(depth, rgb, fov=60, subsample=10):
     # n, 3
-    points = depth_to_points(depth, fov=fov)
+    points = depth_to_points_simple(depth, fov=fov)
     
     # n, 3
     rgb = rgb.permute(1, 2, 0)
