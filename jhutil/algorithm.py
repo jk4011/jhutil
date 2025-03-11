@@ -3,7 +3,7 @@ import jhutil
 from jhutil import cache_output
 
 
-@cache_output(func_name="knn")
+@cache_output(func_name="knn", verbose=False)
 def knn(src, dst, k=1, is_naive=False, is_sklearn=False, device="cuda", chunk_size=1e5):
     """return k nearest neighbors"""
 
@@ -55,6 +55,17 @@ def knn(src, dst, k=1, is_naive=False, is_sklearn=False, device="cuda", chunk_si
 
     return distance, indices
 
+
+def ball_query(src, dst, r, k=10):
+    distance, knn_indices = knn(src, dst, k)
+    mask = distance < r
+    
+    ball_indices = []
+    for i in range(src.size(0)):
+        ball_indices.append(knn_indices[i][mask[i]])
+    
+    return ball_indices
+    
 
 if __name__ == "__main__":
     src = torch.rand(100000, 3)
