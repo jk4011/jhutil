@@ -17,7 +17,14 @@ PALATTE = np.array([[0, 204, 0], [204, 0, 0], [204, 204, 0], [76, 76, 204], [127
                     [0, 127, 127], [76, 153, 0], [153, 0, 76], [76, 0, 153], [153, 76, 0], [76, 0, 153], [153, 0, 76], [204, 51, 127], [204, 51, 127], [51, 204, 127], [51, 127, 204], [127, 51, 204], [127, 204, 51], [76, 76, 178], [76, 178, 76], [178, 76, 76]])
 
 
+
 def show_point_clouds(point_clouds: List[torch.Tensor], colors=None, show_indices=None):
+    
+    for i in range(len(point_clouds)):
+        pcd = point_clouds[i]
+        if isinstance(pcd, torch.Tensor):
+            point_clouds[i] = pcd.detach().cpu()
+    
     if show_indices is None:
         show_indices = range(len(point_clouds))
     point_clouds = to_cpu(point_clouds)
@@ -40,7 +47,7 @@ def show_point_clouds(point_clouds: List[torch.Tensor], colors=None, show_indice
     result["y"] = point_clouds[:, 1]
     result["z"] = point_clouds[:, 2]
 
-    assert colors.shape == point_clouds.shape
+    assert colors.shape == point_clouds.shape, f"colors.shape: {colors.shape}, point_clouds.shape: {point_clouds.shape}"
     result["red"] = colors[:, 0]
     result["green"] = colors[:, 1]
     result["blue"] = colors[:, 2]

@@ -7,35 +7,49 @@ from PIL import Image
 from base64 import b64encode
 from IPython.display import HTML
 from ipywidgets import interact
+import io
 
 
 def show_video(video_path):
-    mp4 = open(video_path,'rb').read()
+    mp4 = open(video_path, "rb").read()
     data_url = "data:video/mp4;base64," + b64encode(mp4).decode()
-    return HTML("""
+    return HTML(
+        """
     <video width=600 controls>
       <source src="%s" type="video/mp4">
     </video>
-    """ % data_url)
-  
+    """
+        % data_url
+    )
+
 
 def show_images(img_paths):
     def plot_img(img_paths, index=0):
         img_path = img_paths[index]
         img = Image.open(img_path)
         plt.imshow(np.asarray(img))
-        plt.axis('off')
+        plt.axis("off")
         plt.show()
 
     # Create an interactive slider to browse through the images
     if len(img_paths) > 0:
-        interact(plot_img, img_paths=[img_paths], index=(0, len(img_paths)-1))
+        interact(plot_img, img_paths=[img_paths], index=(0, len(img_paths) - 1))
     else:
         print("No images found in the list.")
 
 
 def show_matching(
-    img0, img1, mkpts0=torch.empty(0, 2), mkpts1=torch.empty(0, 2), color=None, kpts0=None, kpts1=None, dpi=75, bbox=None, skip_line=False, linewidth=1
+    img0,
+    img1,
+    mkpts0=torch.empty(0, 2),
+    mkpts1=torch.empty(0, 2),
+    color=None,
+    kpts0=None,
+    kpts1=None,
+    dpi=75,
+    bbox=None,
+    skip_line=False,
+    linewidth=1,
 ):
     if img0.shape[0] in [3, 4]:
         img0 = img0.permute(1, 2, 0)
@@ -47,13 +61,12 @@ def show_matching(
         mkpts0 = mkpts0.cpu().numpy()
         mkpts1 = mkpts1.cpu().numpy()
     mkpts0 = mkpts0.copy()
-    mkpts1 = mkpts1.copy()    
-    
+    mkpts1 = mkpts1.copy()
+
     if color is None:
         generator = torch.Generator()  # for fixing seed
         color = plt.cm.jet(torch.rand(mkpts0.shape[0], generator=generator))
 
-    
     if bbox is not None:
         w_from, h_from, w_to, h_to = bbox
         img0 = img0[h_from:h_to, w_from:w_to]
@@ -62,7 +75,7 @@ def show_matching(
         mkpts0[:, 1] = mkpts0[:, 1] - h_from
         mkpts1[:, 0] = mkpts1[:, 0] - w_from
         mkpts1[:, 1] = mkpts1[:, 1] - h_from
-    
+
     assert (
         mkpts0.shape[0] == mkpts1.shape[0]
     ), f"mkpts0: {mkpts0.shape[0]} v.s. mkpts1: {mkpts1.shape[0]}"
@@ -101,4 +114,11 @@ def show_matching(
         axes[0].scatter(mkpts0[:, 0], mkpts0[:, 1], c=color, s=4)
         axes[1].scatter(mkpts1[:, 0], mkpts1[:, 1], c=color, s=4)
 
-    # return fig
+    # Convert figure to PIL Image
+    buf = io.BytesIO()
+    fig.savefig(buf, format="PNG", bbox_inches="tight", pad_inches=0)
+    plt.close(fig)  # Close the figure to free memory
+    buf.seek(0)
+    img_pil = Image.open(buf)
+
+    return img_pil
