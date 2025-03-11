@@ -26,6 +26,41 @@ def save_img(tensor, path):
     Image.fromarray(tensor).save(path)
 
 
+def save_video(image_list: torch.Tensor, filename: str, fps: int = 30, normalize: bool = True):
+    
+    if isinstance(image_list, list):
+        image_list = torch.stack(image_list)
+    image_list = image_list.detach().cpu()
+
+    if image_list.ndim != 4:
+        raise ValueError("입력 텐서의 차원은 4여야 합니다. (B, C, H, W) 또는 (B, H, W, C)")
+
+    b, c, h, w = image_list.shape if image_list.shape[1] <= 4 else (image_list.shape[0], image_list.shape[3], image_list.shape[1], image_list.shape[2])
+
+    if image_list.shape[1] == c and image_list.shape[2] == h and image_list.shape[3] == w:
+        image_list = image_list.permute(0, 2, 3, 1)
+
+    if normalize:
+        image_list = (image_list * 255.0).clamp(0, 255).byte()
+    else:
+        image_list = image_list.clamp(0, 255).byte()
+
+    frames_np = image_list.numpy()
+
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter(filename, fourcc, fps, (w, h))
+
+    for i in range(frames_np.shape[0]):
+        frame = frames_np[i]
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        out.write(frame)
+
+    out.release()
+    print(f"비디오가 '{filename}'로 저장되었습니다.")
+
+
+
+
 def convert_to_gif(image_folder, fps=50):
     output_path = os.path.join(image_folder, "0_output.gif")
     try:
@@ -91,7 +126,7 @@ def to_cuda(x):
     elif isinstance(x, dict):
         x = {key: to_cuda(value) for key, value in x.items()}
     elif isinstance(x, torch.Tensor):
-        x = x.cuda()
+        x = x.cuda().detach()
     return x
 
 
@@ -131,13 +166,14 @@ def release_gpus():
 
 
 # wrapper function
-def cache_output(func_name=""):
+def cache_output(func_name="", override=False, verbose=True):
     def decorator(func):
         def wrapper(*args, **kwargs):
             hash_sum = 0
-            for arg in args:
+            all_args = list(args) + list(kwargs.values())
+            for arg in all_args:
                 if isinstance(arg, torch.Tensor):
-                    arg = np.array(arg.cpu())
+                    arg = np.array(arg.detach().cpu())
                 if isinstance(arg, np.ndarray):
                     hash_int = int(hashlib.md5(arg.tobytes()).hexdigest(), 16)
                 else:
@@ -147,14 +183,19 @@ def cache_output(func_name=""):
             if func_name != "":
                 hash_sum += int(hashlib.md5(str(func_name).encode()).hexdigest(), 16)
 
-            if not os.path.exists(".cache"):
-                os.mkdir(".cache")
-            cache_path = f".cache/{hash_sum}.pt"
-            if os.path.exists(cache_path):
-                from jhutil import color_log; color_log("cccc", f"load cached output, skipping {func_name}")
+            folder_path = "/tmp/.cache"
+            if func_name != "":
+                folder_path = os.path.join(folder_path, func_name)
+            if not os.path.exists(folder_path):
+                os.mkdir(folder_path)
+            cache_path = f"{folder_path}/{hash_sum}.pt"
+            if not override and os.path.exists(cache_path):
+                if verbose:
+                    from jhutil import color_log; color_log("cccc", f"cache file found, skipping {func_name}")
                 return torch.load(cache_path)
             else:
-                from jhutil import color_log; color_log("aaaa", f"no cached output, executing {func_name}")
+                if verbose:
+                    from jhutil import color_log; color_log("aaaa", f"executing {func_name} for caching")
                 result = func(*args, **kwargs)
                 torch.save(result, cache_path)
                 return result
