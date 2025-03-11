@@ -10,14 +10,15 @@ import traceback
 lt.monkey_patch()
 location_history = {}
 
-def color_log(key, *datas, is_yaml=False, endline=' ', return_str=False, skip_duplicate=False):
+
+def color_log(key, *datas, is_yaml=False, endline=' ', return_str=False, repeat=True):
     
     if _traceback_enabled:
         stack = traceback.extract_stack()
         filename, lineno, funcname, code = stack[-2]
         print(f"Called from file: {filename}, line {lineno}")
         
-    if skip_duplicate:
+    if not repeat:
         stack = traceback.extract_stack()
         filename, lineno, funcname, code = stack[-2]
         location = f"{filename}:{lineno}"
@@ -102,11 +103,18 @@ def convert_into_json(value):
         return str(value)
 
 
+def clear_location_history():
+    global location_history
+    location_history = {}
+
+
 _traceback_enabled = False
+
 
 def enable_traceback():
     global _traceback_enabled
     _traceback_enabled = True
+
 
 def disable_traceback():
     global _traceback_enabled
