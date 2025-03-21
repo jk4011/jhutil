@@ -13,11 +13,16 @@ def knn(src, dst, k=1, is_naive=False, is_sklearn=False, device="cuda", chunk_si
 
     if is_sklearn:
         from sklearn.neighbors import NearestNeighbors
-
+        device = src.device
+        
+        src = src.cpu()
+        dst = dst.cpu()
         neigh = NearestNeighbors(n_neighbors=k)
         neigh.fit(dst)
         distances, indices = neigh.kneighbors(src, return_distance=True)
-        return distances.ravel(), indices.ravel()
+        distances = torch.tensor(distances, device=device)
+        indices = torch.tensor(indices, device=device)
+        return distances, indices
 
     if not isinstance(src, torch.Tensor):
         src = torch.tensor(src)

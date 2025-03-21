@@ -47,9 +47,13 @@ def save_video(image_list: torch.Tensor, filename: str, fps: int = 30, normalize
 
     frames_np = image_list.numpy()
 
+    folder = os.path.dirname(filename)
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(filename, fourcc, fps, (w, h))
-
+    
     for i in range(frames_np.shape[0]):
         frame = frames_np[i]
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
@@ -187,7 +191,7 @@ def cache_output(func_name="", override=False, verbose=True):
             if func_name != "":
                 folder_path = os.path.join(folder_path, func_name)
             if not os.path.exists(folder_path):
-                os.mkdir(folder_path)
+                os.makedirs(folder_path)
             cache_path = f"{folder_path}/{hash_sum}.pt"
             if not override and os.path.exists(cache_path):
                 if verbose:

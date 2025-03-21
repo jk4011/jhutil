@@ -15,7 +15,7 @@ from .freq_utils import to_cpu
 
 PALATTE = np.array([[0, 204, 0], [204, 0, 0], [204, 204, 0], [76, 76, 204], [127, 76, 127],
                     [0, 127, 127], [76, 153, 0], [153, 0, 76], [76, 0, 153], [153, 76, 0], [76, 0, 153], [153, 0, 76], [204, 51, 127], [204, 51, 127], [51, 204, 127], [51, 127, 204], [127, 51, 204], [127, 204, 51], [76, 76, 178], [76, 178, 76], [178, 76, 76]])
-
+PALATTE = np.concatenate([PALATTE for _ in range(10)], axis=0)
 
 
 def show_point_clouds(point_clouds: List[torch.Tensor], colors=None, show_indices=None):
