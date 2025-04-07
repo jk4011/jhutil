@@ -30,7 +30,6 @@ def crop_two_image_with_alpha(img1: torch.Tensor, img2: torch.Tensor):
 
     # 2. Determine the union bounding box
     if bbox1 is None and bbox2 is None:
-        # Both images are fully transparent; return them as-is
         return img1, img2
     elif bbox1 is None:
         union_bbox = bbox2

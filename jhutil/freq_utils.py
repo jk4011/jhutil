@@ -196,7 +196,14 @@ def cache_output(func_name="", override=False, verbose=True):
             if not override and os.path.exists(cache_path):
                 if verbose:
                     from jhutil import color_log; color_log("cccc", f"cache file found, skipping {func_name}")
-                return torch.load(cache_path)
+                try:
+                    return torch.load(cache_path)
+                except:
+                    if verbose:
+                        from jhutil import color_log; color_log("aaaa", f"cache file corrupted, executing {func_name}")
+                    result = func(*args, **kwargs)
+                    torch.save(result, cache_path)
+                    return result
             else:
                 if verbose:
                     from jhutil import color_log; color_log("aaaa", f"executing {func_name} for caching")
