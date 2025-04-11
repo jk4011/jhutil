@@ -175,14 +175,14 @@ def cache_output(func_name="", override=False, verbose=True):
         def wrapper(*args, **kwargs):
             hash_sum = 0
             all_args = list(args) + list(kwargs.values())
-            for arg in all_args:
+            for i, arg in enumerate(all_args):
                 if isinstance(arg, torch.Tensor):
                     arg = np.array(arg.detach().cpu())
                 if isinstance(arg, np.ndarray):
                     hash_int = int(hashlib.md5(arg.tobytes()).hexdigest(), 16)
                 else:
                     hash_int = int(hashlib.md5(str(arg).encode()).hexdigest(), 16)
-                hash_sum += hash_int
+                hash_sum += hash_int * (i + 1)
                 
             if func_name != "":
                 hash_sum += int(hashlib.md5(str(func_name).encode()).hexdigest(), 16)
