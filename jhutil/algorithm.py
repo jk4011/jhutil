@@ -3,7 +3,7 @@ import jhutil
 from jhutil import cache_output
 
 
-@cache_output(func_name="knn", verbose=False)
+@cache_output(func_name="knn", verbose=False, override=True)
 def knn(src, dst, k=1, is_naive=False, is_sklearn=False, device="cuda", chunk_size=1e5):
     """return k nearest neighbors"""
 
@@ -14,8 +14,8 @@ def knn(src, dst, k=1, is_naive=False, is_sklearn=False, device="cuda", chunk_si
     if is_sklearn:
         from sklearn.neighbors import NearestNeighbors
         
-        src = src.cpu()
-        dst = dst.cpu()
+        src = src.cpu().detach()
+        dst = dst.cpu().detach()
         neigh = NearestNeighbors(n_neighbors=k)
         neigh.fit(dst)
         distances, indices = neigh.kneighbors(src, return_distance=True)
@@ -60,16 +60,38 @@ def knn(src, dst, k=1, is_naive=False, is_sklearn=False, device="cuda", chunk_si
     return distance, indices
 
 
-def ball_query(src, dst, r, k=10):
-    distance, knn_indices = knn(src, dst, k)
+def ball_query(src, dst, r, k=10, concat=False):
+    k = min(k, dst.size(0))
+    distance, knn_indices = knn(src, dst, k, is_sklearn=True)
     mask = distance < r
     
-    ball_indices = []
-    for i in range(src.size(0)):
-        ball_indices.append(knn_indices[i][mask[i]])
+    if concat:
+        ball_indices = knn_indices[mask].unique()
+    else:
+        ball_indices = []
+        for i in range(src.size(0)):
+            ball_indices.append(knn_indices[i][mask[i]])
     
     return ball_indices
+
+
+def dbscan(src, is_sklearn=True, eps=0.05, min_samples=3):
     
+    if is_sklearn:
+        device = src.device
+        src = src.cpu().numpy()
+        # 예시 데이터 생성 (반달 모양)
+        from sklearn.cluster import DBSCAN
+
+        # DBSCAN 적용
+        dbscan = DBSCAN(eps=eps, min_samples=min_samples)
+        labels = dbscan.fit_predict(src)
+        labels = torch.tensor(labels, device=device, dtype=torch.int32)
+    
+    return labels
+
+
+
 
 if __name__ == "__main__":
     src = torch.rand(100000, 3)

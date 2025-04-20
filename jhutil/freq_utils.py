@@ -170,7 +170,7 @@ def release_gpus():
 
 
 # wrapper function
-def cache_output(func_name="", override=False, verbose=True):
+def cache_output(func_name="", override=False, verbose=True, folder_path="/tmp/.cache"):
     def decorator(func):
         def wrapper(*args, **kwargs):
             hash_sum = 0
@@ -183,16 +183,17 @@ def cache_output(func_name="", override=False, verbose=True):
                 else:
                     hash_int = int(hashlib.md5(str(arg).encode()).hexdigest(), 16)
                 hash_sum += hash_int * (i + 1)
-                
             if func_name != "":
                 hash_sum += int(hashlib.md5(str(func_name).encode()).hexdigest(), 16)
 
-            folder_path = "/tmp/.cache"
             if func_name != "":
-                folder_path = os.path.join(folder_path, func_name)
-            if not os.path.exists(folder_path):
-                os.makedirs(folder_path)
-            cache_path = f"{folder_path}/{hash_sum}.pt"
+                subfolder_path = os.path.join(folder_path, func_name)
+            else:
+                subfolder_path = folder_path
+
+            if not os.path.exists(subfolder_path):
+                os.makedirs(subfolder_path)
+            cache_path = f"{subfolder_path}/{hash_sum}.pt"
             if not override and os.path.exists(cache_path):
                 if verbose:
                     from jhutil import color_log; color_log("cccc", f"cache file found, skipping {func_name}")

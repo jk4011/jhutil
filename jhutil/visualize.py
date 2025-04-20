@@ -56,11 +56,11 @@ def show_matching(
         img0 = img0.permute(1, 2, 0)
         img1 = img1.permute(1, 2, 0)
     if isinstance(img0, torch.Tensor):
-        img0 = img0.cpu().numpy()
-        img1 = img1.cpu().numpy()
+        img0 = img0.cpu().detach().numpy()
+        img1 = img1.cpu().detach().numpy()
     if isinstance(mkpts0, torch.Tensor):
-        mkpts0 = mkpts0.cpu().numpy()
-        mkpts1 = mkpts1.cpu().numpy()
+        mkpts0 = mkpts0.cpu().detach().numpy()
+        mkpts1 = mkpts1.cpu().detach().numpy()
     mkpts0 = mkpts0.copy()
     mkpts1 = mkpts1.copy()
 
@@ -140,11 +140,11 @@ def show_groups(
         img0 = img0.permute(1, 2, 0)
         img1 = img1.permute(1, 2, 0)
     if isinstance(img0, torch.Tensor):
-        img0 = img0.cpu().numpy()
-        img1 = img1.cpu().numpy()
+        img0 = img0.cpu().detach().numpy()
+        img1 = img1.cpu().detach().numpy()
     if isinstance(mkpts0, torch.Tensor):
-        mkpts0 = mkpts0.cpu().numpy()
-        mkpts1 = mkpts1.cpu().numpy()
+        mkpts0 = mkpts0.cpu().detach().numpy()
+        mkpts1 = mkpts1.cpu().detach().numpy()
     mkpts0 = mkpts0.copy()
     mkpts1 = mkpts1.copy()
 
