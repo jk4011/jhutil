@@ -64,11 +64,17 @@ def crop_image_with_alpha(img: torch.Tensor):
 
 
 def crop_two_image_with_background(
-    img1: torch.Tensor, img2: torch.Tensor, background="black"
+    img1: torch.Tensor, img2: torch.Tensor, background="black", shape='chw'
 ):
     assert img1.dim() == 3
     assert img2.dim() == 3
+    assert shape in ["chw", "hwc"]
 
+    if shape == "hwc":
+        img1 = img1.permute(2, 0, 1)
+        img2 = img2.permute(2, 0, 1)
+
+    assert img1.shape[0] == 3
     assert background in ["black", "white"]
 
     if background == "black":
@@ -81,11 +87,13 @@ def crop_two_image_with_background(
     img1_alpha = torch.cat([img1, alpha1.unsqueeze(0)], dim=0)
     img2_alpha = torch.cat([img2, alpha2.unsqueeze(0)], dim=0)
 
-    union_bbox, cropped_img1, cropped_img2 = crop_two_image_with_alpha(
-        img1_alpha, img2_alpha
-    )
+    union_bbox, cropped_img1, cropped_img2 = crop_two_image_with_alpha(img1_alpha, img2_alpha)
     cropped_img1 = cropped_img1[:3]
     cropped_img2 = cropped_img2[:3]
+
+    if shape == "hwc":
+        cropped_img1 = cropped_img1.permute(1, 2, 0)
+        cropped_img2 = cropped_img2.permute(1, 2, 0)
 
     return union_bbox, cropped_img1, cropped_img2
 
