@@ -17,6 +17,12 @@ def load_img(path, downsample=1):
     return img
 
 
+def bkgd2white(rgba):
+    new_rgb = (rgba[:3] + (1 - rgba[3])[None, :])
+    new_rgba = torch.cat([new_rgb, rgba[3:4]], dim=0)
+    return new_rgba
+
+
 def save_img(tensor, path):
     tensor = tensor.squeeze().detach().cpu()
     if tensor.ndim == 3 and tensor.shape[0] in [3, 4]:
@@ -217,6 +223,11 @@ def cache_output(func_name="", override=False, verbose=True, folder_path="/tmp/.
 
 
 def get_img_diff(img1, img2):
+    if img1.shape[0] == 4:
+        img1 = img1[:3]
+    if img2.shape[0] == 4:
+        img2 = img2[:3]
+
     diff_img = torch.zeros_like(img1).cuda()
     
     diff_max = (img1 - img2).max(dim=0).values
