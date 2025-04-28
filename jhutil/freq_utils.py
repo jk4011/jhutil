@@ -8,6 +8,7 @@ import numpy as np
 import cv2
 import functools
 import hashlib
+from functools import lru_cache
 
 
 def load_img(path, downsample=1):
@@ -175,6 +176,11 @@ def release_gpus():
     torch.cuda.empty_cache()
 
 
+@lru_cache(maxsize=128)
+def load_cache_file(cache_path):
+    return torch.load(cache_path)
+
+
 # wrapper function
 def cache_output(func_name="", override=False, verbose=True, folder_path="/tmp/.cache"):
     def decorator(func):
@@ -204,7 +210,7 @@ def cache_output(func_name="", override=False, verbose=True, folder_path="/tmp/.
                 if verbose:
                     from jhutil import color_log; color_log("cccc", f"cache file found, skipping {func_name}")
                 try:
-                    return torch.load(cache_path)
+                    return load_cache_file(cache_path)
                 except:
                     if verbose:
                         from jhutil import color_log; color_log("aaaa", f"cache file corrupted, executing {func_name}")

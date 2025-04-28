@@ -3,7 +3,7 @@ import jhutil
 from jhutil import cache_output
 
 
-@cache_output(func_name="knn", verbose=False, override=True)
+@cache_output(func_name="knn", verbose=False, override=True, folder_path=".cache")
 def knn(src, dst, k=1, is_naive=False, is_sklearn=False, device="cuda", chunk_size=1e5):
     """return k nearest neighbors"""
 
