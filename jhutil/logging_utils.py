@@ -11,7 +11,7 @@ lt.monkey_patch()
 location_history = {}
 
 
-def color_log(key, *datas, is_yaml=False, endline=' ', return_str=False, repeat=True):
+def color_log(key, *datas, is_yaml=False, endline=' ', return_str=False, repeat=True, update=False):
     
     if _traceback_enabled:
         stack = traceback.extract_stack()
@@ -81,7 +81,10 @@ def color_log(key, *datas, is_yaml=False, endline=' ', return_str=False, repeat=
 
     if key_type == str:
         output = "  " + output
-    print(output)
+    if update:
+        print('\r' + output, end='')
+    else:
+        print(output)
     if return_str:
         return output
     
