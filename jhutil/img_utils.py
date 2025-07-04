@@ -1,6 +1,16 @@
 import torch
 
 
+def rgb(image, subsample=1):
+    if image.dim() == 3:
+        if image.shape[0] in [3, 4]:
+            image = image.permute(2, 0, 1)
+        return image[:, ::subsample, ::subsample].rgb
+    elif image.dim() == 4:
+        if image.shape[-1] in [3, 4]:
+            image = image.permute(0, 3, 1, 2)
+        return image[:, :, ::subsample, ::subsample].rgb
+
 def get_bbox(alpha: torch.Tensor):
     nonzero_coords = (alpha > 0).nonzero(as_tuple=False)
     if nonzero_coords.numel() == 0:

@@ -9,6 +9,11 @@ import cv2
 import functools
 import hashlib
 from functools import lru_cache
+import json
+
+
+def load_json(path):
+    return json.load(open(path, "r", encoding="utf-8"))
 
 
 def load_img(path, downsample=1):
