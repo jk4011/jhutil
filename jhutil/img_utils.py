@@ -1,4 +1,6 @@
 import torch
+import math
+from .freq_utils import save_img
 
 
 def get_bbox(alpha: torch.Tensor):
@@ -122,3 +124,56 @@ def show_xy(xy):
     plane[coord] = True
 
     return plane.chans
+
+
+def save_motion_img(
+    images: torch.Tensor,
+    path=None,
+    *,
+    alpha_range=(0.5, 1.0),
+    alpha_mode="exponential",
+    stride: int = 0,
+) -> torch.Tensor:
+    # 1) (N, H, W, 4) → (N, 4, H, W)
+    if images.ndim == 4 and images.shape[-1] in (3, 4):
+        images = images.permute(0, 3, 1, 2).contiguous()
+
+    N, C, H, W = images.shape
+    if C != 4:
+        raise ValueError("Input must be RGBA (4-channel) images")
+
+    if alpha_mode not in ("linear", "exponential"):
+        raise ValueError("alpha_mode must be 'linear' or 'exponential'")
+
+    # 2) per-image alpha scale (oldest → newest)
+    if N == 1:
+        weights = torch.tensor([1.0], device=images.device)
+    else:
+        if alpha_mode == "linear":
+            weights = torch.linspace(
+                alpha_range[0], alpha_range[1], steps=N, device=images.device
+            )
+        else:  # exponential
+            t = torch.linspace(
+                alpha_range[0], alpha_range[1], steps=N, device=images.device
+            )
+            weights = (torch.exp(t) - 1.0) / (math.e - 1.0)
+
+    # 3) 캔버스 폭 = W + stride*(N-1)  (이미지 잘리지 않도록)
+    W_canvas = W + max(stride, 0) * (N - 1)
+    canvas = torch.zeros((4, H, W_canvas), dtype=images.dtype, device=images.device)
+
+    # 4) Older → Newer 순으로 blending (좌→우 이동)
+    for i in range(N):
+        img      = images[i]                # (4, H, W)
+        alpha    = img[3] * weights[i]      # (H, W)
+        alpha_ex = alpha.unsqueeze(0)       # (1, H, W) for broadcasting
+
+        x0 = stride * i                     # 왼쪽 시작 위치
+        x1 = x0 + W                         # 오른쪽 끝 위치
+        # canvas slice와 블렌딩
+        canvas[:, :, x0:x1] = img * alpha_ex + canvas[:, :, x0:x1] * (1.0 - alpha_ex)
+
+    if path is not None:
+        save_img(canvas, path)
+    return canvas

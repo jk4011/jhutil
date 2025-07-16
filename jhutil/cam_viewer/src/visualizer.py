@@ -182,7 +182,7 @@ class CameraVisualizer:
                 (z1, z2) = (cone[edge[0], 2], cone[edge[1], 2])
                 fig.add_trace(go.Scatter3d(
                     x=[x1, x2], y=[y1, y2], z=[z1, z2], mode='lines',
-                    line=dict(color=clr, width=3),
+                    line=dict(color=clr, width=12),
                     name=legend, showlegend=(i == 0)))
 
             # Add label.

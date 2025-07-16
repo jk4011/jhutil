@@ -42,7 +42,7 @@ def get_example_datas(format="quick", root_path="inputs/quick/cam_c2w/", image_s
     return poses, legends, colors, images
 
 
-def visualize_camera(poses, legends=None, pcds=[], colors=["red", "yellow", "green", "blue", "purple"], images=None, scene_size=5, show_indices=None):
+def visualize_camera(poses, legends=None, pcds=[], colors=["gray"], images=None, scene_size=5, show_indices=None):
     n_camera = len(poses)
     if show_indices is None:
         show_indices = range(len(poses))
@@ -75,7 +75,7 @@ def visualize_camera(poses, legends=None, pcds=[], colors=["red", "yellow", "gre
 
     viz = CameraVisualizer(poses, legends, colors, images=images, pcds=pcds)
     fig = viz.update_figure(scene_bounds=scene_size, base_radius=1, zoom_scale=1,
-                            show_grid=True, show_ticklabels=True, show_background=True)
+                            show_grid=False, show_ticklabels=True, show_background=False)
 
     fig.show()
 

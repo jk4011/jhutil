@@ -52,6 +52,7 @@ def show_matching(
     skip_line=False,
     linewidth=1,
 ):
+    # Permute channels if tensor is in CxHxW and convert to numpy
     if img0.shape[0] in [3, 4]:
         img0 = img0.permute(1, 2, 0)
         img1 = img1.permute(1, 2, 0)
@@ -64,38 +65,47 @@ def show_matching(
     mkpts0 = mkpts0.copy()
     mkpts1 = mkpts1.copy()
 
+    # Generate random colors if none provided
     if color is None:
-        generator = torch.Generator()  # for fixing seed
+        generator = torch.Generator()
         color = plt.cm.jet(torch.rand(mkpts0.shape[0], generator=generator))
 
+    # Apply bounding box cropping
     if bbox is not None:
         w_from, h_from, w_to, h_to = bbox
         img0 = img0[h_from:h_to, w_from:w_to]
         img1 = img1[h_from:h_to, w_from:w_to]
-        mkpts0[:, 0] = mkpts0[:, 0] - w_from
-        mkpts0[:, 1] = mkpts0[:, 1] - h_from
-        mkpts1[:, 0] = mkpts1[:, 0] - w_from
-        mkpts1[:, 1] = mkpts1[:, 1] - h_from
+        mkpts0[:, 0] -= w_from
+        mkpts0[:, 1] -= h_from
+        mkpts1[:, 0] -= w_from
+        mkpts1[:, 1] -= h_from
 
-    assert (
-        mkpts0.shape[0] == mkpts1.shape[0]
-    ), f"mkpts0: {mkpts0.shape[0]} v.s. mkpts1: {mkpts1.shape[0]}"
+    assert mkpts0.shape[0] == mkpts1.shape[0], \
+        f"mkpts0: {mkpts0.shape[0]} v.s. mkpts1: {mkpts1.shape[0]}"
+
+    # Create figure with transparent background
     fig, axes = plt.subplots(1, 2, figsize=(10, 6), dpi=dpi)
-    axes[0].imshow(img0, cmap="gray")
-    axes[1].imshow(img1, cmap="gray")
-    for i in range(2):  # clear all frames
-        axes[i].get_yaxis().set_ticks([])
-        axes[i].get_xaxis().set_ticks([])
-        for spine in axes[i].spines.values():
+    fig.patch.set_alpha(0)
+    for ax in axes:
+        ax.patch.set_alpha(0)
+        ax.get_xaxis().set_ticks([])
+        ax.get_yaxis().set_ticks([])
+        for spine in ax.spines.values():
             spine.set_visible(False)
+
+    # Display images (RGBA or RGB)
+    axes[0].imshow(img0)
+    axes[1].imshow(img1)
     plt.tight_layout(pad=1)
 
+    # Plot keypoints if provided
     if kpts0 is not None:
         assert kpts1 is not None
         axes[0].scatter(kpts0[:, 0], kpts0[:, 1], c="w", s=2)
         axes[1].scatter(kpts1[:, 0], kpts1[:, 1], c="w", s=2)
 
-    if mkpts0.shape[0] != 0 and mkpts1.shape[0] != 0:
+    # Plot matches
+    if mkpts0.shape[0] > 0:
         fig.canvas.draw()
         transFigure = fig.transFigure.inverted()
         fkpts0 = transFigure.transform(axes[0].transData.transform(mkpts0))
@@ -111,17 +121,15 @@ def show_matching(
                 )
                 for i in range(len(mkpts0))
             ]
-
         axes[0].scatter(mkpts0[:, 0], mkpts0[:, 1], c=color, s=4)
         axes[1].scatter(mkpts1[:, 0], mkpts1[:, 1], c=color, s=4)
 
-    # Convert figure to PIL Image
+    # Convert figure to PIL Image, preserving transparency
     buf = io.BytesIO()
-    fig.savefig(buf, format="PNG", bbox_inches="tight", pad_inches=0)
-    plt.close(fig)  # Close the figure to free memory
+    fig.savefig(buf, format="PNG", bbox_inches="tight", pad_inches=0, transparent=True)
+    plt.close(fig)
     buf.seek(0)
-    img_pil = Image.open(buf)
-
+    img_pil = Image.open(buf).convert("RGBA")
     return img_pil
 
 
@@ -136,6 +144,7 @@ def show_groups(
     dpi=75,
     bbox=None,
 ):
+    # Permute channels if tensor is in CxHxW and convert to numpy
     if img0.shape[0] in [3, 4]:
         img0 = img0.permute(1, 2, 0)
         img1 = img1.permute(1, 2, 0)
@@ -148,48 +157,58 @@ def show_groups(
     mkpts0 = mkpts0.copy()
     mkpts1 = mkpts1.copy()
 
+    # Apply bounding box cropping
     if bbox is not None:
         w_from, h_from, w_to, h_to = bbox
         img0 = img0[h_from:h_to, w_from:w_to]
         img1 = img1[h_from:h_to, w_from:w_to]
-        mkpts0[:, 0] = mkpts0[:, 0] - w_from
-        mkpts0[:, 1] = mkpts0[:, 1] - h_from
-        mkpts1[:, 0] = mkpts1[:, 0] - w_from
-        mkpts1[:, 1] = mkpts1[:, 1] - h_from
+        mkpts0[:, 0] -= w_from
+        mkpts0[:, 1] -= h_from
+        mkpts1[:, 0] -= w_from
+        mkpts1[:, 1] -= h_from
 
-    assert (
-        mkpts0.shape[0] == mkpts1.shape[0]
-    ), f"mkpts0: {mkpts0.shape[0]} v.s. mkpts1: {mkpts1.shape[0]}"
+    assert mkpts0.shape[0] == mkpts1.shape[0], \
+        f"mkpts0: {mkpts0.shape[0]} v.s. mkpts1: {mkpts1.shape[0]}"
+
+    # Create figure with transparent background
     fig, axes = plt.subplots(1, 2, figsize=(10, 6), dpi=dpi)
-    axes[0].imshow(img0, cmap="gray")
-    axes[1].imshow(img1, cmap="gray")
-    for i in range(2):  # clear all frames
-        axes[i].get_yaxis().set_ticks([])
-        axes[i].get_xaxis().set_ticks([])
-        for spine in axes[i].spines.values():
+    fig.patch.set_alpha(0)
+    for ax in axes:
+        ax.patch.set_alpha(0)
+        ax.get_xaxis().set_ticks([])
+        ax.get_yaxis().set_ticks([])
+        for spine in ax.spines.values():
             spine.set_visible(False)
+
+    # Display images (RGBA or RGB)
+    axes[0].imshow(img0)
+    axes[1].imshow(img1)
     plt.tight_layout(pad=1)
 
+    # Plot keypoints if provided
     if kpts0 is not None:
         assert kpts1 is not None
         axes[0].scatter(kpts0[:, 0], kpts0[:, 1], c="w", s=2)
         axes[1].scatter(kpts1[:, 0], kpts1[:, 1], c="w", s=2)
 
-    if mkpts0.shape[0] != 0 and mkpts1.shape[0] != 0:
-        for i in range(len(groups)):
-            group = groups[i]
-            color = (PALATTE[i] / 255).tolist()
-            color = color + [0.1]
-            fig.canvas.draw()
+    # Plot groups with alpha colors
+    if mkpts0.shape[0] > 0 and groups is not None:
+        for i, group in enumerate(groups):
+            base_color = (PALATTE[i] / 255).tolist()
+            rgba_color = base_color + [0.1]
+            axes[0].scatter(
+                mkpts0[group][:, 0], mkpts0[group][:, 1],
+                c=[rgba_color], s=50, marker='s'
+            )
+            axes[1].scatter(
+                mkpts1[group][:, 0], mkpts1[group][:, 1],
+                c=[rgba_color], s=50, marker='s'
+            )
 
-            axes[0].scatter(mkpts0[group][:, 0], mkpts0[group][:, 1], c=color, s=50, marker='s')
-            axes[1].scatter(mkpts1[group][:, 0], mkpts1[group][:, 1], c=color, s=50, marker='s')
-
-    # Convert figure to PIL Image
+    # Convert figure to PIL Image, preserving transparency
     buf = io.BytesIO()
-    fig.savefig(buf, format="PNG", bbox_inches="tight", pad_inches=0)
-    plt.close(fig)  # Close the figure to free memory
+    fig.savefig(buf, format="PNG", bbox_inches="tight", pad_inches=0, transparent=True)
+    plt.close(fig)
     buf.seek(0)
-    img_pil = Image.open(buf)
-
+    img_pil = Image.open(buf).convert("RGBA")
     return img_pil

@@ -229,10 +229,6 @@ def cache_output(func_name="", override=False, verbose=True, folder_path="/tmp/.
 
 
 def get_img_diff(img1, img2):
-    if img1.shape[0] == 4:
-        img1 = img1[:3]
-    if img2.shape[0] == 4:
-        img2 = img2[:3]
 
     diff_img = torch.zeros_like(img1).cuda()
     
@@ -241,6 +237,8 @@ def get_img_diff(img1, img2):
     
     diff_img[0][diff_max > 0] = diff_max[diff_max > 0]
     diff_img[2][diff_min < 0] = - diff_min[diff_min < 0]
+    if img1.shape[0] == 4:
+        diff_img[3] = 1
     
     diff_img_concat = torch.concat([img1, diff_img, img2], dim=2)
     return diff_img_concat
