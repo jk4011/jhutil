@@ -27,6 +27,7 @@ setup(
         "einops",
         "pyntcloud",
         "Pillow",  # If visualization not shown in ipynb, use Pillow==9.5.0
+        "opencv-python",
     ],
     packages=["jhutil"],
     python_requires=">=3.6, <4",

@@ -1,17 +1,32 @@
 import torch
-import jhutil
 from jhutil import cache_output
 
 
 @cache_output(func_name="knn", verbose=False, override=True, folder_path=".cache")
-def knn(src, dst, k=1, is_naive=False, is_sklearn=False, device="cuda", chunk_size=1e5):
+def knn(src, dst, k=1, is_naive=False, backend="faiss", device="cuda", chunk_size=1e5):
     """return k nearest neighbors"""
 
     assert (len(src.shape) == 2)
     assert (len(dst.shape) == 2)
     assert (src.shape[-1] == dst.shape[-1])
 
-    if is_sklearn:
+    if backend == "faiss":
+        import faiss
+        import faiss.contrib.torch_utils  # PyTorch 텐서 지원 활성화
+        d = src.shape[-1]
+        res = faiss.StandardGpuResources()
+
+        config = faiss.GpuIndexFlatConfig()
+        # config.useFloat16 = True  # float16 연산 활성화 - 속도 차이가 없음.
+        
+        index = faiss.GpuIndexFlatL2(res, d, config)
+
+        index.add(dst)
+
+        distances, indices = index.search(src, k)
+        return distances, indices
+
+    elif backend == "sklearn":
         from sklearn.neighbors import NearestNeighbors
         
         src = src.cpu().detach()
@@ -44,7 +59,7 @@ def knn(src, dst, k=1, is_naive=False, is_sklearn=False, device="cuda", chunk_si
 
         from knn_cuda import KNN
         knn = KNN(k=k, transpose_mode=True)
-        src_chunks = torch.chunk(src, int(src.shape[0] * dst.shape[0] // chunk_size) + 1, 0)
+        src_chunks = torch.chunk(src, int(src.shape[0] // chunk_size) + 1, 0)
         distance = []
         indices = []    
         for src_chunk in src_chunks:
@@ -54,8 +69,8 @@ def knn(src, dst, k=1, is_naive=False, is_sklearn=False, device="cuda", chunk_si
         distance = torch.cat(distance, dim=1)
         indices = torch.cat(indices, dim=1)
 
-    distance = distance.squeeze(0).to(device)
-    indices = indices.squeeze(0).to(device)
+    distance = distance.to(device)
+    indices = indices.to(device)
 
     return distance, indices
 
