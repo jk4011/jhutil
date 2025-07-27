@@ -2,6 +2,13 @@ import torch
 import math
 from .freq_utils import save_img
 
+def get_masked_image(img, mask, white_ratio=0.7):
+    if mask.dim() == 2:
+        mask = mask.unsqueeze(0).repeat(img.shape[0], 1, 1)
+    masked_img = img.clone()
+    masked_img[~mask] = masked_img[~mask] * (1 - white_ratio) + white_ratio
+    return masked_img
+
 
 def rgb(image, subsample=1):
     if image.dim() == 3:

@@ -10,6 +10,7 @@ import functools
 import hashlib
 from functools import lru_cache
 import json
+import pickle
 
 
 def load_json(path):
@@ -183,11 +184,31 @@ def release_gpus():
 
 @lru_cache(maxsize=128)
 def load_cache_file(cache_path):
-    return torch.load(cache_path)
+    if cache_path.endswith('.pt'):
+        return torch.load(cache_path)
+    
+    elif cache_path.endswith('.pkl'):
+        with open(cache_path, 'rb') as f:
+            obj = pickle.load(f)
+        return obj
+            
+    else:
+        raise ValueError("Unsupported file format. Use .pt or .pkl files.")
 
 
+
+def save_cache_file(results, cache_path):
+    if cache_path.endswith('.pt'):
+        torch.save(results, cache_path)
+    elif cache_path.endswith('.pkl'):
+        with open(cache_path, 'wb') as f:
+            pickle.dump(results, f)
+    else:
+        raise ValueError("Unsupported file format. Use .pt or .pkl files.")
+
+    
 # wrapper function
-def cache_output(func_name="", override=False, verbose=True, folder_path="/tmp/.cache"):
+def cache_output(func_name="", override=False, verbose=True, folder_path="/tmp/.cache", use_pickle=False):
     def decorator(func):
         def wrapper(*args, **kwargs):
             hash_sum = 0
@@ -200,17 +221,21 @@ def cache_output(func_name="", override=False, verbose=True, folder_path="/tmp/.
                 else:
                     hash_int = int(hashlib.md5(str(arg).encode()).hexdigest(), 16)
                 hash_sum += hash_int * (i + 1)
+            
             if func_name != "":
                 hash_sum += int(hashlib.md5(str(func_name).encode()).hexdigest(), 16)
-
-            if func_name != "":
                 subfolder_path = os.path.join(folder_path, func_name)
             else:
                 subfolder_path = folder_path
 
             if not os.path.exists(subfolder_path):
                 os.makedirs(subfolder_path)
-            cache_path = f"{subfolder_path}/{hash_sum}.pt"
+            
+            if use_pickle:
+                cache_path = f"{subfolder_path}/{hash_sum}.pkl"
+            else:
+                cache_path = f"{subfolder_path}/{hash_sum}.pt"
+                
             if not override and os.path.exists(cache_path):
                 if verbose:
                     from jhutil import color_log; color_log("cccc", f"cache file found, skipping {func_name}")
@@ -220,7 +245,7 @@ def cache_output(func_name="", override=False, verbose=True, folder_path="/tmp/.
                     if verbose:
                         from jhutil import color_log; color_log("aaaa", f"cache file corrupted, executing {func_name}")
                     result = func(*args, **kwargs)
-                    torch.save(result, cache_path)
+                    save_cache_file(result, cache_path)
                     return result
             else:
                 if verbose:
