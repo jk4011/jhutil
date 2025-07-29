@@ -2,11 +2,17 @@ import torch
 import math
 from .freq_utils import save_img
 
-def get_masked_image(img, mask, white_ratio=0.7):
+def get_masked_image(img, mask, blur_ratio=0.7, mask_color=[1., 1., 1.]):
+    if not isinstance(img, torch.Tensor):
+        img = torch.tensor(img, dtype=torch.float32)
+    if not isinstance(mask, torch.Tensor):
+        mask = torch.tensor(mask, dtype=torch.bool)
+    
     if mask.dim() == 2:
         mask = mask.unsqueeze(0).repeat(img.shape[0], 1, 1)
     masked_img = img.clone()
-    masked_img[~mask] = masked_img[~mask] * (1 - white_ratio) + white_ratio
+    mask_color = torch.tensor(mask_color).repeat((~mask).sum() // 3)
+    masked_img[~mask] = (1 - blur_ratio) * masked_img[~mask] + blur_ratio * mask_color
     return masked_img
 
 
