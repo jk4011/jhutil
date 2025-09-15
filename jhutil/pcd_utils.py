@@ -14,7 +14,7 @@ from .freq_utils import to_cpu
 import plotly.io as pio
 
 # VS Code에서 외부 브라우저로 띄우고 싶다면 한 줄 추가
-pio.renderers.default = "browser"
+# pio.renderers.default = "browser"
 
 
 PALATTE = np.array(

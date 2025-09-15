@@ -3,7 +3,7 @@ from jhutil import cache_output
 
 
 @cache_output(func_name="knn", verbose=False, override=True, folder_path=".cache")
-def knn(src, dst, k=1, is_naive=False, backend="faiss", device="cuda", chunk_size=1e5):
+def knn(src, dst, k=1, is_naive=False, backend="sklearn", device="cuda", chunk_size=1e5):
     """return k nearest neighbors"""
 
     assert (len(src.shape) == 2)
@@ -77,7 +77,7 @@ def knn(src, dst, k=1, is_naive=False, backend="faiss", device="cuda", chunk_siz
 
 def ball_query(src, dst, r, k=10, concat=False):
     k = min(k, dst.size(0))
-    distance, knn_indices = knn(src, dst, k, is_sklearn=True)
+    distance, knn_indices = knn(src, dst, k)
     mask = distance < r
     
     if concat:
