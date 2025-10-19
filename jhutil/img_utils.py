@@ -2,6 +2,34 @@ import torch
 import math
 from .freq_utils import save_img
 
+
+def resize_mask(mask: torch.Tensor, h: int, w: int) -> torch.Tensor:
+    """
+    정수형 segmentation mask를 subsampling으로 정확하게 리사이즈합니다.
+    interpolation 없이, 균등 인덱스 기반으로 샘플링합니다.
+
+    Args:
+        mask (torch.Tensor): [B, H, W] int tensor
+        h (int): target height
+        w (int): target width
+
+    Returns:
+        torch.Tensor: [B, h, w] int tensor
+    """
+    assert mask.ndim == 3, "mask는 [B, H, W] 형태여야 합니다."
+    B, H, W = mask.shape
+    assert H >= h and W >= w, "H >= h, W >= w 여야 합니다."
+
+    # 균등한 인덱스 계산 (float → int 변환)
+    idx_h = torch.linspace(0, H - 1, h, device=mask.device).long()
+    idx_w = torch.linspace(0, W - 1, w, device=mask.device).long()
+
+    # 인덱싱으로 정확한 subsampling 수행
+    resized = mask[:, idx_h][:, :, idx_w]
+
+    return resized
+
+
 def get_masked_image(img, mask, blur_ratio=0.7, mask_color=[1., 1., 1.]):
     if not isinstance(img, torch.Tensor):
         img = torch.tensor(img, dtype=torch.float32)

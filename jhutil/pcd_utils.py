@@ -76,7 +76,8 @@ def show_point_clouds(
             palette = PALATTE[show_indices]  # (#pcd, 3)
             rgb_arr = np.repeat(palette, n_points, axis=0)  # (N, 3)
         else:
-            rgb_arr = np.concatenate(colors, axis=0)  # (N, 3)
+            np_colors = [_to_cpu_nparray(p) for p in colors]
+            rgb_arr = np.concatenate(np_colors, axis=0)  # (N, 3)
 
         assert xyz.shape == rgb_arr.shape, f"{xyz.shape=} {rgb_arr.shape=}"
 
