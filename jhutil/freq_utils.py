@@ -206,9 +206,15 @@ def save_cache_file(results, cache_path):
     else:
         raise ValueError("Unsupported file format. Use .pt or .pkl files.")
 
+
+def tensor_to_hash(tensor, light=False):
+    if isinstance(tensor, torch.Tensor):
+        tensor = np.array(tensor.detach().cpu())
+    return int(hashlib.md5(tensor.tobytes()).hexdigest(), 16)
+
     
 # wrapper function
-def cache_output(func_name="", override=False, verbose=True, folder_path="/tmp/.cache", use_pickle=False):
+def cache_output(func_name="", override=False, verbose=True, folder_path="/root/data1/jinhyeok/.cache", use_pickle=False):
     def decorator(func):
         def wrapper(*args, **kwargs):
             hash_sum = 0

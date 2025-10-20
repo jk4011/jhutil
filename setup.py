@@ -13,7 +13,7 @@ setup(
         "numpy",
         "openai",
         "colorama",
-        "lovely-tensors",
+        "lovely_tensors==0.1.18",
         "easydict",
         "notion_client",
         "slack_sdk",
