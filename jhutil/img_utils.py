@@ -16,6 +16,9 @@ def resize_mask(mask: torch.Tensor, h: int, w: int) -> torch.Tensor:
     Returns:
         torch.Tensor: [B, h, w] int tensor
     """
+    dim = mask.ndim
+    if dim == 2:
+        mask = mask.unsqueeze(0)
     assert mask.ndim == 3, "mask는 [B, H, W] 형태여야 합니다."
     B, H, W = mask.shape
     assert H >= h and W >= w, "H >= h, W >= w 여야 합니다."
@@ -26,8 +29,23 @@ def resize_mask(mask: torch.Tensor, h: int, w: int) -> torch.Tensor:
 
     # 인덱싱으로 정확한 subsampling 수행
     resized = mask[:, idx_h][:, :, idx_w]
+    if dim == 2:
+        resized = resized[0]
 
     return resized
+
+
+def show_image_with_mask(target_img, mask, opacity=0.5):
+    if mask.ndim == 2:
+        mask = mask.unsqueeze(0)
+    elif mask.ndim == 4:
+        mask = mask[0]
+    if target_img.ndim == 4:
+        target_img = target_img[0]
+    
+    if target_img.shape[-2:] != mask.shape[-2:]:
+        mask = resize_mask(mask, target_img.shape[-2], target_img.shape[-1])
+    return torch.cat([target_img, (mask + opacity) / (1 + opacity)], dim=0).rgb
 
 
 def get_masked_image(img, mask, blur_ratio=0.7, mask_color=[1., 1., 1.]):

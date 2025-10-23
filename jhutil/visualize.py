@@ -9,6 +9,9 @@ from IPython.display import HTML
 from ipywidgets import interact
 import io
 from .pcd_utils import PALATTE
+from einops import rearrange
+
+
 
 
 def show_video(video_path):
@@ -22,6 +25,35 @@ def show_video(video_path):
     """
         % data_url
     )
+
+
+def show_mask_diff_with_plt(pred_mask, gt_mask):
+    mask_diff = torch.stack([pred_mask, pred_mask & gt_mask, gt_mask]).float()
+    show_image_with_plt(mask_diff)
+
+def show_image_with_plt(img_tensor):
+    if img_tensor.ndim == 2:
+        raise ValueError("img_tensor should be 3 or 4 dim")
+    
+    if img_tensor.ndim == 4:
+        img_tensor = rearrange(img_tensor, 'b c h w -> h w b c')
+        # if it is multi image, show the image with 4 columns
+        if img_tensor.shape[0] > 1:
+            fig, axes = plt.subplots(1, 4, figsize=(10, 6))
+            for i in range(4):
+                axes[i].imshow(img_tensor[i])
+                axes[i].axis("off")
+            plt.show()
+        else:
+            plt.imshow(img_tensor[0])
+            plt.axis("off")
+            plt.show()
+    elif img_tensor.ndim == 3:
+        img_tensor = rearrange(img_tensor, 'c h w -> h w c').cpu().detach().numpy()
+        plt.imshow(img_tensor)
+        plt.axis("off")
+        plt.show()
+
 
 
 def show_images(img_paths):
