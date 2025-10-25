@@ -10,6 +10,9 @@ def knn(src, dst, k=1, is_naive=False, backend="sklearn", device="cuda", chunk_s
     assert (len(dst.shape) == 2)
     assert (src.shape[-1] == dst.shape[-1])
 
+    # faiss is better suited when d > 20
+    # faiss FAQ에서 저차원이면 scikit-learn 쓰는게 좋다고 함.
+    # https://github.com/facebookresearch/faiss/wiki/FAQ#how-can-i-index-2d-or-3d-data
     if backend == "faiss":
         import faiss
         import faiss.contrib.torch_utils  # PyTorch 텐서 지원 활성화
@@ -17,21 +20,20 @@ def knn(src, dst, k=1, is_naive=False, backend="sklearn", device="cuda", chunk_s
         res = faiss.StandardGpuResources()
 
         config = faiss.GpuIndexFlatConfig()
-        # config.useFloat16 = True  # float16 연산 활성화 - 속도 차이가 없음.
+        config.useFloat16 = True  # float16 연산 활성화 - 속도 차이가 없음.
         
         index = faiss.GpuIndexFlatL2(res, d, config)
-
         index.add(dst)
 
         distances, indices = index.search(src, k)
-        return distances, indices
 
+    # sklearn is better suited when d < 10
     elif backend == "sklearn":
         from sklearn.neighbors import NearestNeighbors
         
-        src = src.cpu().detach()
-        dst = dst.cpu().detach()
-        neigh = NearestNeighbors(n_neighbors=k)
+        src = src.cpu().detach().numpy()
+        dst = dst.cpu().detach().numpy()
+        neigh = NearestNeighbors(n_neighbors=k, algorithm="kd_tree", n_jobs=-1)
         neigh.fit(dst)
         distances, indices = neigh.kneighbors(src, return_distance=True)
         distances = torch.tensor(distances, device=device, dtype=torch.float32)

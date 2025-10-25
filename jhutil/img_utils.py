@@ -5,8 +5,9 @@ from .freq_utils import save_img
 
 def resize_mask(mask: torch.Tensor, h: int, w: int) -> torch.Tensor:
     """
-    정수형 segmentation mask를 subsampling으로 정확하게 리사이즈합니다.
-    interpolation 없이, 균등 인덱스 기반으로 샘플링합니다.
+    정수형 segmentation mask를 리사이즈합니다.
+    - Downsampling: interpolation 없이, 균등 인덱스 기반으로 샘플링
+    - Upsampling: nearest neighbor interpolation 사용
 
     Args:
         mask (torch.Tensor): [B, H, W] int tensor
@@ -16,19 +17,34 @@ def resize_mask(mask: torch.Tensor, h: int, w: int) -> torch.Tensor:
     Returns:
         torch.Tensor: [B, h, w] int tensor
     """
+    import torch.nn.functional as F
+
     dim = mask.ndim
     if dim == 2:
         mask = mask.unsqueeze(0)
     assert mask.ndim == 3, "mask는 [B, H, W] 형태여야 합니다."
     B, H, W = mask.shape
-    assert H >= h and W >= w, "H >= h, W >= w 여야 합니다."
 
-    # 균등한 인덱스 계산 (float → int 변환)
-    idx_h = torch.linspace(0, H - 1, h, device=mask.device).long()
-    idx_w = torch.linspace(0, W - 1, w, device=mask.device).long()
+    # Check if we need upsampling in either dimension
+    need_upsample = (h > H) or (w > W)
 
-    # 인덱싱으로 정확한 subsampling 수행
-    resized = mask[:, idx_h][:, :, idx_w]
+    if need_upsample:
+        # Use nearest neighbor interpolation for upsampling
+        # Need to add channel dimension for F.interpolate
+        mask_float = mask.unsqueeze(1).float()  # [B, 1, H, W]
+        resized = F.interpolate(mask_float, size=(h, w), mode='nearest')
+        resized = resized.squeeze(1)  # [B, h, w]
+        # Convert back to original dtype
+        resized = resized.to(mask.dtype)
+    else:
+        # Use original downsampling logic
+        # 균등한 인덱스 계산 (float → int 변환)
+        idx_h = torch.linspace(0, H - 1, h, device=mask.device).long()
+        idx_w = torch.linspace(0, W - 1, w, device=mask.device).long()
+
+        # 인덱싱으로 정확한 subsampling 수행
+        resized = mask[:, idx_h][:, :, idx_w]
+
     if dim == 2:
         resized = resized[0]
 
