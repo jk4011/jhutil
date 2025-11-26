@@ -79,8 +79,10 @@ def get_masked_image(img, mask, blur_ratio=0.7, mask_color=[1., 1., 1.]):
 
 
 def rgb(image, subsample=1):
+    if image.min() < 0:
+        image = (image - image.min()) / (image.max() - image.min())
     if image.dim() == 3:
-        if image.shape[0] in [3, 4]:
+        if image.shape[-1] in [3, 4]:
             image = image.permute(2, 0, 1)
         return image[:, ::subsample, ::subsample].rgb
     elif image.dim() == 4:
