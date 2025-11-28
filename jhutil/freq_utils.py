@@ -11,7 +11,18 @@ import hashlib
 from functools import lru_cache
 import json
 import pickle
+import random
 import inspect
+
+
+def reproducibility(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 
 def load_json(path):
@@ -227,15 +238,17 @@ def tensor_to_hash(tensor, light=False):
 
 is_cache_off = False
 
-def turn_off_cache():
+def cache_off():
     global is_cache_off
     is_cache_off = True
 
+def cache_on():
+    global is_cache_off
+    is_cache_off = False
 
 # wrapper function
 def cache_output(func_name="", override=False, verbose=True, folder_path=".cache", use_pickle=False):
     def decorator(func):
-        # signature 분석
         fullspec = inspect.getfullargspec(func)
         is_method = len(fullspec.args) > 0 and fullspec.args[0] == 'self'
 
@@ -248,13 +261,17 @@ def cache_output(func_name="", override=False, verbose=True, folder_path=".cache
             # ============================================
             if is_method:
                 cls_name = args[0].__class__.__name__
+                # 첫 인자를 class name 문자열로 바꿔줌
                 new_args = (cls_name,) + args[1:]
             else:
                 new_args = args
 
-            hash_sum = 0
             all_args = list(new_args) + list(kwargs.values())
 
+            # ============================================
+            # ② hashing 계산
+            # ============================================
+            hash_sum = 0
             for i, arg in enumerate(all_args):
                 if isinstance(arg, torch.Tensor):
                     arg = np.array(arg.detach().cpu())
@@ -263,7 +280,7 @@ def cache_output(func_name="", override=False, verbose=True, folder_path=".cache
                 else:
                     hash_int = int(hashlib.md5(str(arg).encode()).hexdigest(), 16)
                 hash_sum += hash_int * (i + 1)
-            
+
             if func_name != "":
                 hash_sum += int(hashlib.md5(str(func_name).encode()).hexdigest(), 16)
                 subfolder_path = os.path.join(folder_path, func_name)
@@ -272,12 +289,12 @@ def cache_output(func_name="", override=False, verbose=True, folder_path=".cache
 
             if not os.path.exists(subfolder_path):
                 os.makedirs(subfolder_path)
-            
-            if use_pickle:
-                cache_path = f"{subfolder_path}/{hash_sum}.pkl"
-            else:
-                cache_path = f"{subfolder_path}/{hash_sum}.pt"
-                
+
+            cache_path = f"{subfolder_path}/{hash_sum}.pkl" if use_pickle else f"{subfolder_path}/{hash_sum}.pt"
+
+            # ============================================
+            # cache hit
+            # ============================================
             if not override and os.path.exists(cache_path):
                 if verbose:
                     from jhutil import color_log; color_log("cccc", f"cache file found, skipping {func_name}")
@@ -289,12 +306,17 @@ def cache_output(func_name="", override=False, verbose=True, folder_path=".cache
                     result = func(*args, **kwargs)
                     save_cache_file(result, cache_path)
                     return result
-            else:
-                if verbose:
-                    from jhutil import color_log; color_log("aaaa", f"executing {func_name} for caching")
-                result = func(*args, **kwargs)
-                torch.save(result, cache_path)
-                return result
+
+            # ============================================
+            # cache miss
+            # ============================================
+            if verbose:
+                from jhutil import color_log; color_log("aaaa", f"executing {func_name} for caching")
+
+            result = func(*args, **kwargs)
+            torch.save(result, cache_path)
+            return result
+
         return wrapper
     return decorator
 
