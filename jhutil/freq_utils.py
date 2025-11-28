@@ -11,6 +11,7 @@ import hashlib
 from functools import lru_cache
 import json
 import pickle
+import inspect
 
 
 def load_json(path):
@@ -146,6 +147,17 @@ def to_cuda(x):
         x = x.cuda().detach()
     return x
 
+def to_tensor(x):
+    if isinstance(x, list):
+        x = [to_cuda(item) for item in x]
+    elif isinstance(x, tuple):
+        x = (to_cuda(item) for item in x)
+    elif isinstance(x, dict):
+        x = {key: to_cuda(value) for key, value in x.items()}
+    elif isinstance(x, np.ndarray):
+        x = torch.from_numpy(x)
+    return x
+
 
 def to_cpu(x):
     r"""Move all tensors to cpu."""
@@ -185,7 +197,7 @@ def release_gpus():
 @lru_cache(maxsize=128)
 def load_cache_file(cache_path):
     if cache_path.endswith('.pt'):
-        return torch.load(cache_path)
+        return torch.load(cache_path, weights_only=False)
     
     elif cache_path.endswith('.pkl'):
         with open(cache_path, 'rb') as f:
@@ -212,13 +224,37 @@ def tensor_to_hash(tensor, light=False):
         tensor = np.array(tensor.detach().cpu())
     return int(hashlib.md5(tensor.tobytes()).hexdigest(), 16)
 
-    
+
+is_cache_off = False
+
+def turn_off_cache():
+    global is_cache_off
+    is_cache_off = True
+
+
 # wrapper function
-def cache_output(func_name="", override=False, verbose=True, folder_path="/root/data1/jinhyeok/.cache", use_pickle=False):
+def cache_output(func_name="", override=False, verbose=True, folder_path=".cache", use_pickle=False):
     def decorator(func):
+        # signature 분석
+        fullspec = inspect.getfullargspec(func)
+        is_method = len(fullspec.args) > 0 and fullspec.args[0] == 'self'
+
         def wrapper(*args, **kwargs):
+            if is_cache_off:
+                return func(*args, **kwargs)
+
+            # ============================================
+            # ① self를 class name으로 치환
+            # ============================================
+            if is_method:
+                cls_name = args[0].__class__.__name__
+                new_args = (cls_name,) + args[1:]
+            else:
+                new_args = args
+
             hash_sum = 0
-            all_args = list(args) + list(kwargs.values())
+            all_args = list(new_args) + list(kwargs.values())
+
             for i, arg in enumerate(all_args):
                 if isinstance(arg, torch.Tensor):
                     arg = np.array(arg.detach().cpu())
@@ -249,7 +285,7 @@ def cache_output(func_name="", override=False, verbose=True, folder_path="/root/
                     return load_cache_file(cache_path)
                 except:
                     if verbose:
-                        from jhutil import color_log; color_log("aaaa", f"cache file corrupted, executing {func_name}")
+                        from jhutil import color_log; color_log("aaaa", f"cache file {cache_path} corrupted, executing {func_name}")
                     result = func(*args, **kwargs)
                     save_cache_file(result, cache_path)
                     return result
