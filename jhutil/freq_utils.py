@@ -58,7 +58,7 @@ def save_video(image_list: torch.Tensor, filename: str, fps: int = 30, normalize
     image_list = image_list.detach().cpu()
 
     if image_list.ndim != 4:
-        raise ValueError("입력 텐서의 차원은 4여야 합니다. (B, C, H, W) 또는 (B, H, W, C)")
+        raise ValueError("Input tensor must have 4 dimensions. (B, C, H, W) or (B, H, W, C)")
 
     b, c, h, w = image_list.shape if image_list.shape[1] <= 4 else (image_list.shape[0], image_list.shape[3], image_list.shape[1], image_list.shape[2])
 
@@ -85,7 +85,7 @@ def save_video(image_list: torch.Tensor, filename: str, fps: int = 30, normalize
         out.write(frame)
 
     out.release()
-    print(f"비디오가 '{filename}'로 저장되었습니다.")
+    print(f"Video has been saved to '{filename}'.")
 
 
 
