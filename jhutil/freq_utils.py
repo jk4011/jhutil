@@ -158,6 +158,17 @@ def to_cuda(x):
         x = x.cuda().detach()
     return x
 
+def to_tensor(x):
+    if isinstance(x, list):
+        x = [to_cuda(item) for item in x]
+    elif isinstance(x, tuple):
+        x = (to_cuda(item) for item in x)
+    elif isinstance(x, dict):
+        x = {key: to_cuda(value) for key, value in x.items()}
+    elif isinstance(x, np.ndarray):
+        x = torch.from_numpy(x)
+    return x
+
 
 def to_cpu(x):
     r"""Move all tensors to cpu."""
@@ -291,7 +302,7 @@ def cache_output(func_name="", override=False, verbose=True, folder_path=".cache
                     return load_cache_file(cache_path)
                 except:
                     if verbose:
-                        from jhutil import color_log; color_log("aaaa", f"cache file corrupted, executing {func_name}")
+                        from jhutil import color_log; color_log("aaaa", f"cache file {cache_path} corrupted, executing {func_name}")
                     result = func(*args, **kwargs)
                     save_cache_file(result, cache_path)
                     return result

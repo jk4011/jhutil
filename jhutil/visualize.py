@@ -26,9 +26,13 @@ def show_video(video_path):
         % data_url
     )
 
+def get_mask_diff(pred_mask, gt_mask):
+    mask_diff = torch.stack([pred_mask, pred_mask & gt_mask, gt_mask]).float()
+    return mask_diff
+
 
 def show_mask_diff_with_plt(pred_mask, gt_mask):
-    mask_diff = torch.stack([pred_mask, pred_mask & gt_mask, gt_mask]).float()
+    mask_diff = get_mask_diff(pred_mask, gt_mask)
     show_image_with_plt(mask_diff)
 
 def show_image_with_plt(img_tensor):
@@ -57,18 +61,51 @@ def show_image_with_plt(img_tensor):
 
 
 def show_images(img_paths):
-    def plot_img(img_paths, index=0):
-        img_path = img_paths[index]
-        img = Image.open(img_path)
-        plt.imshow(np.asarray(img))
-        plt.axis("off")
-        plt.show()
+    """
+    Display images in a 4-column grid layout
 
-    # Create an interactive slider to browse through the images
-    if len(img_paths) > 0:
-        interact(plot_img, img_paths=[img_paths], index=(0, len(img_paths) - 1))
-    else:
+    Args:
+        img_paths: List of image paths to display
+    """
+    if len(img_paths) == 0:
         print("No images found in the list.")
+        return
+
+    plt.close("all")
+
+    # Calculate grid dimensions (4 columns)
+    n_cols = 4
+    n_images = len(img_paths)
+    n_rows = (n_images + n_cols - 1) // n_cols  # Ceiling division
+
+    # Create subplots
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(6*n_cols, 4*n_rows))
+    if n_rows == 1 and n_cols == 1:
+        axes = np.array([[axes]])
+    elif n_rows == 1:
+        axes = axes.reshape(1, -1)
+    elif n_cols == 1:
+        axes = axes.reshape(-1, 1)
+
+    # Plot each image
+    for idx, img_path in enumerate(img_paths):
+        row = idx // n_cols
+        col = idx % n_cols
+        ax = axes[row, col]
+
+        img = Image.open(img_path)
+        ax.imshow(np.asarray(img))
+        ax.set_title(f"Image {idx}")
+        ax.axis('off')
+
+    # Hide unused subplots
+    for idx in range(n_images, n_rows * n_cols):
+        row = idx // n_cols
+        col = idx % n_cols
+        axes[row, col].axis('off')
+
+    plt.tight_layout()
+    plt.show()
 
 
 def show_matching(
