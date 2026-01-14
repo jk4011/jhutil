@@ -9,6 +9,7 @@ import cv2
 import functools
 import hashlib
 from functools import lru_cache
+from contextlib import contextmanager
 import json
 import pickle
 import random
@@ -236,15 +237,28 @@ def tensor_to_hash(tensor, light=False):
     return int(hashlib.md5(tensor.tobytes()).hexdigest(), 16)
 
 
-is_cache_off = False
+# check environment variable JHUTIL_CACHE_OFF
+is_cache_off = os.environ.get("JHUTIL_CACHE_OFF") == "1"
+if is_cache_off:
+    from jhutil import color_log; color_log(1111, "cache is off")
 
+@contextmanager
 def cache_off():
+    """Context manager to temporarily disable cache.
+    
+    Usage:
+        with cache_off():
+            # cache is disabled here
+            result = my_cached_function()
+        # cache is restored to original state
+    """
     global is_cache_off
+    original_value = is_cache_off
     is_cache_off = True
-
-def cache_on():
-    global is_cache_off
-    is_cache_off = False
+    try:
+        yield
+    finally:
+        is_cache_off = original_value
 
 # wrapper function
 def cache_output(func_name="", override=False, verbose=True, folder_path=".cache", use_pickle=False):
@@ -253,9 +267,6 @@ def cache_output(func_name="", override=False, verbose=True, folder_path=".cache
         is_method = len(fullspec.args) > 0 and fullspec.args[0] == 'self'
 
         def wrapper(*args, **kwargs):
-            if is_cache_off:
-                return func(*args, **kwargs)
-
             # ============================================
             # ① self를 class name으로 치환
             # ============================================
@@ -295,7 +306,7 @@ def cache_output(func_name="", override=False, verbose=True, folder_path=".cache
             # ============================================
             # cache hit
             # ============================================
-            if not override and os.path.exists(cache_path):
+            if not override and os.path.exists(cache_path) and not is_cache_off:
                 if verbose:
                     from jhutil import color_log; color_log("cccc", f"cache file found, skipping {func_name}")
                 try:

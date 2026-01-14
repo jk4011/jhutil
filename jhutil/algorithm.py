@@ -3,12 +3,17 @@ from jhutil import cache_output
 
 
 @cache_output(func_name="knn", verbose=False, override=True, folder_path=".cache")
-def knn(src, dst, k=1, is_naive=False, backend="sklearn", device="cuda", chunk_size=1e5):
+def knn(src, dst, k=1, is_naive=False, backend="sklearn", device="cuda", chunk_size=1e5, exclude_first=False):
     """return k nearest neighbors"""
 
     assert (len(src.shape) == 2)
     assert (len(dst.shape) == 2)
     assert (src.shape[-1] == dst.shape[-1])
+
+    if not isinstance(src, torch.Tensor):
+        src = torch.tensor(src)
+    if not isinstance(dst, torch.Tensor):
+        dst = torch.tensor(dst)
 
     # faiss is better suited when d > 20
     # faiss FAQ에서 저차원이면 scikit-learn 쓰는게 좋다고 함.
@@ -38,20 +43,15 @@ def knn(src, dst, k=1, is_naive=False, backend="sklearn", device="cuda", chunk_s
         distances, indices = neigh.kneighbors(src, return_distance=True)
         distances = torch.tensor(distances, device=device, dtype=torch.float32)
         indices = torch.tensor(indices, device=device, dtype=torch.int32)
-        return distances, indices
 
-    if not isinstance(src, torch.Tensor):
-        src = torch.tensor(src)
-    if not isinstance(dst, torch.Tensor):
-        dst = torch.tensor(dst)
 
     # cpu or gpu, memory inefficient
-    if is_naive:
+    elif is_naive:
         src = src.reshape(-1, 1, src.shape[-1])
-        distance = torch.norm(src - dst, dim=-1)
+        distances = torch.norm(src - dst, dim=-1)
 
-        knn = distance.topk(k, largest=False)
-        distance = knn.values
+        knn = distances.topk(k, largest=False)
+        distances = knn.values
         indices = knn.indices
 
     # gpu
@@ -62,19 +62,23 @@ def knn(src, dst, k=1, is_naive=False, backend="sklearn", device="cuda", chunk_s
         from knn_cuda import KNN
         knn = KNN(k=k, transpose_mode=True)
         src_chunks = torch.chunk(src, int(src.shape[0] // chunk_size) + 1, 0)
-        distance = []
+        distances = []
         indices = []    
         for src_chunk in src_chunks:
             dist_chunk, indices_chunk = knn(dst[None, :], src_chunk[None, :])
-            distance.append(dist_chunk)
+            distances.append(dist_chunk)
             indices.append(indices_chunk)
-        distance = torch.cat(distance, dim=1)
+        distances = torch.cat(distances, dim=1)
         indices = torch.cat(indices, dim=1)
 
-    distance = distance.to(device)
+    distances = distances.to(device)
     indices = indices.to(device)
 
-    return distance, indices
+    if exclude_first:
+        distances = distances[:, 1:]
+        indices = indices[:, 1:]
+    
+    return distances, indices
 
 
 def ball_query(src, dst, r, k=10, concat=False):

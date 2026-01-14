@@ -1,6 +1,7 @@
 import torch
 import math
 from .freq_utils import save_img
+import torch.nn.functional as F
 
 
 def resize_mask(mask: torch.Tensor, h: int, w: int) -> torch.Tensor:
@@ -76,6 +77,17 @@ def get_masked_image(img, mask, blur_ratio=0.7, mask_color=[1., 1., 1.]):
     mask_color = torch.tensor(mask_color).repeat((~mask).sum() // 3)
     masked_img[~mask] = (1 - blur_ratio) * masked_img[~mask] + blur_ratio * mask_color
     return masked_img
+
+
+def rgb_mask(img, mask, transparency=0.2):
+    if mask.ndim == 2:
+        mask = mask[None]
+    
+    size = mask.shape[-2:]
+    if img.shape[-2:] != size:
+        img = F.interpolate(img[None], size=size, mode='bilinear', align_corners=False)[0]
+    rgba = torch.cat([img, (mask + transparency) / (1 + transparency)], dim=0)
+    return rgba.rgb
 
 
 def rgb(image, subsample=1):

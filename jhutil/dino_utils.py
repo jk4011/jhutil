@@ -16,14 +16,14 @@ def load_dino():
     processor = AutoImageProcessor.from_pretrained("facebook/dinov2-base", use_fast=True, token=False)
     model = Dinov2Model.from_pretrained("facebook/dinov2-base", token=False).to(device).eval()
 
-def load_anyup():
+def load_upsampler():
     global upsampler
     upsampler = torch.hub.load("wimmerth/anyup", "anyup", verbose=False).to(device).eval()
 
 
-@cache_output(func_name="_dino_inference", override=False)
+# @cache_output(func_name="_dino_inference", override=False)
 @torch.no_grad()
-def _dino_inference(image_path_list, subsample_ratio=1, use_upsampler=False):
+def _dino_inference(image_path_list, subsample_ratio=1, upsample=False):
     if isinstance(image_path_list, str):
         image_path_list = [image_path_list]
 
@@ -59,11 +59,11 @@ def _dino_inference(image_path_list, subsample_ratio=1, use_upsampler=False):
     assert h * w == N, (h, w, N)
     lr_features = tokens.reshape(B, h, w, C).permute(0, 3, 1, 2).contiguous()  # (1, C, 32, 32)
 
-    if not use_upsampler:
+    if not upsample:
         return lr_features, None
 
     if upsampler is None:
-        load_anyup()
+        load_upsampler()
 
     with torch.no_grad():
         hr_features = upsampler(hr_image, lr_features, q_chunk_size=256)  # (1, C, 448, 448)
@@ -72,13 +72,13 @@ def _dino_inference(image_path_list, subsample_ratio=1, use_upsampler=False):
 
 
 @torch.no_grad()
-def dino_inference(image_path_list, subsample=1, use_upsampler=False, visualize=False, load_gpu=True):
-    lr_features, hr_features = _dino_inference(image_path_list, subsample, use_upsampler)
+def dino_inference(image_path_list, subsample=1, upsample=False, visualize=False, load_gpu=True):
+    lr_features, hr_features = _dino_inference(image_path_list, subsample, upsample)
     B, C, h, w = lr_features.shape
     
     # 4) Joint PCA
     if visualize:
-        if use_upsampler:
+        if upsample:
             B, C, Hr, Wr = hr_features.shape
             
             lr_flat = lr_features[0].permute(1, 2, 0).reshape(-1, C)
