@@ -6,9 +6,43 @@ from lovely_numpy import lo
 from copy import deepcopy
 from colorama import Fore, Back, Style
 import traceback
+import logging
+import os
+from contextlib import redirect_stdout, redirect_stderr
+from functools import wraps
+from contextlib import nullcontext
+
 
 lt.monkey_patch()
 location_history = {}
+
+
+def silent_fn(stdout=True, stderr=False):
+    def deco(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            with open(os.devnull, "w") as devnull:
+                with (redirect_stdout(devnull) if stdout else nullcontext()), \
+                     (redirect_stderr(devnull) if stderr else nullcontext()):
+                    return fn(*args, **kwargs)
+        return wrapper
+    return deco
+
+
+
+def file_log(file_name, *datas):    
+    logger = logging.getLogger(file_name)
+    logger.setLevel(logging.INFO)
+
+    # if this logger is not initialized, initialize it
+    if not logger.handlers:
+        fh = logging.FileHandler(file_name, encoding="utf-8")
+        fh.setLevel(logging.INFO)
+        logger.addHandler(fh)
+
+    print(datas)
+    logger.info(" ".join(str(data) for data in datas))
+
 
 
 def color_log(key, *datas, is_yaml=False, endline=' ', return_str=False, repeat=True, update=False):

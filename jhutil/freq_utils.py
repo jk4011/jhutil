@@ -14,6 +14,7 @@ import json
 import pickle
 import random
 import inspect
+import shutil
 
 
 def reproducibility(seed):
@@ -206,22 +207,45 @@ def release_gpus():
     torch.cuda.empty_cache()
 
 
-@lru_cache(maxsize=128)
+
+def check_disk_space(path, required_gb=5):
+    """Check if there is enough disk space available.
+
+    Args:
+        path: Path to check disk space for
+        required_gb: Required space in GB (default: 5GB)
+
+    Returns:
+        bool: True if enough space is available, False otherwise
+    """
+    try:
+        stat = shutil.disk_usage(os.path.dirname(path) if os.path.isfile(path) or not os.path.exists(path) else path)
+        required_bytes = required_gb * 1024 * 1024 * 1024
+        return stat.free > required_bytes
+    except Exception as e:
+        print(f"Warning: Could not check disk space: {e}")
+        return True  # Proceed if we can't check
+
+
 def load_cache_file(cache_path):
     if cache_path.endswith('.pt'):
         return torch.load(cache_path, weights_only=False)
-    
+
     elif cache_path.endswith('.pkl'):
         with open(cache_path, 'rb') as f:
             obj = pickle.load(f)
         return obj
-            
+
     else:
         raise ValueError("Unsupported file format. Use .pt or .pkl files.")
 
 
 
 def save_cache_file(results, cache_path):
+    if not check_disk_space(cache_path, required_gb=5):
+        print(f"Warning: Not enough disk space (< 5GB available). Skipping cache save to {cache_path}")
+        return False
+
     if cache_path.endswith('.pt'):
         torch.save(results, cache_path)
     elif cache_path.endswith('.pkl'):
@@ -229,6 +253,8 @@ def save_cache_file(results, cache_path):
             pickle.dump(results, f)
     else:
         raise ValueError("Unsupported file format. Use .pt or .pkl files.")
+
+    return True
 
 
 def tensor_to_hash(tensor, light=False):
@@ -325,7 +351,7 @@ def cache_output(func_name="", override=False, verbose=True, folder_path=".cache
                 from jhutil import color_log; color_log("aaaa", f"executing {func_name} for caching")
 
             result = func(*args, **kwargs)
-            torch.save(result, cache_path)
+            save_cache_file(result, cache_path)
             return result
 
         return wrapper
