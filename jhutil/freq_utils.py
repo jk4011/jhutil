@@ -15,6 +15,7 @@ import pickle
 import random
 import inspect
 import shutil
+import torch.nn.functional as F
 
 
 def reproducibility(seed):
@@ -31,10 +32,12 @@ def load_json(path):
     return json.load(open(path, "r", encoding="utf-8"))
 
 
-def load_img(path, downsample=1):
+def load_img(path, max_resolution=None):
     img = ToTensor()(Image.open(path))
-    if downsample > 1:
-        img = img[:, ::downsample, ::downsample]
+    if max_resolution is not None and (img.shape[1] > max_resolution or img.shape[2] > max_resolution):
+        resize_scale = min(max_resolution / img.shape[1], max_resolution / img.shape[2])
+        H, W = int(img.shape[1] * resize_scale), int(img.shape[2] * resize_scale)
+        img = F.interpolate(img.unsqueeze(0), size=(H, W), mode="bilinear", align_corners=False)[0]
     return img
 
 
@@ -268,6 +271,8 @@ is_cache_off = os.environ.get("JHUTIL_CACHE_OFF") == "1"
 if is_cache_off:
     from jhutil import color_log; color_log(1111, "cache is off")
 
+is_save_off = False
+
 @contextmanager
 def cache_off():
     """Context manager to temporarily disable cache.
@@ -285,6 +290,17 @@ def cache_off():
         yield
     finally:
         is_cache_off = original_value
+
+@contextmanager
+def save_off():
+    global is_save_off
+    original_value = is_save_off
+    is_save_off = True
+    try:
+        yield
+    finally:
+        is_save_off = original_value
+
 
 # wrapper function
 def cache_output(func_name="", override=False, verbose=True, folder_path=".cache", use_pickle=False):
@@ -341,7 +357,8 @@ def cache_output(func_name="", override=False, verbose=True, folder_path=".cache
                     if verbose:
                         from jhutil import color_log; color_log("aaaa", f"cache file {cache_path} corrupted, executing {func_name}")
                     result = func(*args, **kwargs)
-                    save_cache_file(result, cache_path)
+                    if not is_save_off:
+                        save_cache_file(result, cache_path)
                     return result
 
             # ============================================
@@ -351,7 +368,9 @@ def cache_output(func_name="", override=False, verbose=True, folder_path=".cache
                 from jhutil import color_log; color_log("aaaa", f"executing {func_name} for caching")
 
             result = func(*args, **kwargs)
-            save_cache_file(result, cache_path)
+
+            if not is_save_off:
+                save_cache_file(result, cache_path)
             return result
 
         return wrapper
